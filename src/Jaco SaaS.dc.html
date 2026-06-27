@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;}
+    html,body{margin:0;padding:0;}
+    ::-webkit-scrollbar{width:9px;height:9px;}
+    ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:9px;}
+    ::-webkit-scrollbar-track{background:transparent;}
+    input::placeholder{color:#94a3b8;}
+    @keyframes jacoSlide{from{transform:translateX(40px);opacity:0;}to{transform:translateX(0);opacity:1;}}
+    @keyframes jacoFade{from{opacity:0;}to{opacity:1;}}
+    @keyframes jacoUp{from{transform:translateY(14px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+  </style>
+</helmet>
+<template id="__bundler_thumbnail" data-bg-color="#101a36">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#101a36"/>
+    <rect x="470" y="300" width="260" height="200" rx="44" fill="#1e40af"/>
+    <circle cx="600" cy="372" r="40" fill="none" stroke="#fff" stroke-width="22"/>
+    <path d="M512 470c40-50 128-72 176-72s136 22 176 72" fill="none" stroke="#fff" stroke-width="22" stroke-linecap="round"/>
+  </svg>
+</template>
+<div style="height:100vh;width:100%;overflow:hidden;font-family:'Manrope',-apple-system,BlinkMacSystemFont,sans-serif;background:#f4f6f9;color:#0f172a;-webkit-font-smoothing:antialiased;">
+
+  <!-- ===================== LOGIN ===================== -->
+  <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}">
+  <div style="display:flex;height:100%;width:100%;">
+
+    <div style="{{ L.loginBrand }}">
+      <div style="position:absolute;top:-90px;right:-70px;width:300px;height:300px;border-radius:50%;background:rgba(147,180,247,.14);"></div>
+      <div style="position:absolute;bottom:-120px;left:-80px;width:320px;height:320px;border-radius:50%;background:rgba(255,255,255,.05);"></div>
+      <div style="position:relative;display:flex;align-items:center;gap:12px;">
+        <div style="width:42px;height:42px;border-radius:12px;background:{{ s.brandMark }};display:flex;align-items:center;justify-content:center;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="9" r="3.4"/><path d="M3 19c2.5-3 6-4.5 9-4.5s6.5 1.5 9 4.5"/></svg>
+        </div>
+        <div style="font-size:19px;font-weight:800;color:#fff;letter-spacing:-.01em;">Jacó<span style="color:#93b4f7;"> SaaS</span></div>
+      </div>
+      <div style="position:relative;max-width:380px;">
+        <div style="font-size:34px;font-weight:800;line-height:1.15;letter-spacing:-.02em;color:#fff;">Gestiona tus reservas en la costa del Pacífico.</div>
+        <div style="font-size:15px;line-height:1.6;color:rgba(255,255,255,.6);margin-top:18px;">Clases de surf, tours ATV, pesca y canopy — todo tu negocio turístico en Jacó, organizado en un solo lugar.</div>
+      </div>
+      <div style="position:relative;font-size:12.5px;color:rgba(255,255,255,.4);">© 2026 Jacó SaaS · Hecho en Costa Rica 🇨🇷</div>
+    </div>
+
+    <div style="{{ L.loginFormWrap }}">
+      <div style="width:100%;max-width:380px;animation:jacoUp .4s ease;">
+        <div style="{{ L.loginMobileLogo }}">
+          <div style="width:40px;height:40px;border-radius:11px;background:{{ s.brandMark }};display:flex;align-items:center;justify-content:center;">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="9" r="3.4"/><path d="M3 19c2.5-3 6-4.5 9-4.5s6.5 1.5 9 4.5"/></svg>
+          </div>
+          <div style="font-size:17px;font-weight:800;color:#0f172a;">Jacó<span style="color:#1e40af;"> SaaS</span></div>
+        </div>
+        <div style="font-size:25px;font-weight:800;letter-spacing:-.02em;color:#0f172a;">Bienvenido de nuevo</div>
+        <div style="font-size:14px;color:#64748b;margin-top:6px;margin-bottom:26px;">Inicia sesión para gestionar tus reservas.</div>
+
+        <label style="display:block;font-size:12.5px;font-weight:700;color:#475569;margin-bottom:7px;">Correo electrónico</label>
+        <input name="email" value="{{ loginForm.email }}" onInput="{{ onLoginField }}" placeholder="tu@negocio.cr" style="width:100%;padding:12px 14px;border:1px solid #e2e8f0;border-radius:11px;font-size:14px;font-family:inherit;color:#0f172a;background:#fff;margin-bottom:16px;" style-focus="border-color:#1e40af;box-shadow:0 0 0 3px rgba(30,64,175,.13)" />
+
+        <label style="display:block;font-size:12.5px;font-weight:700;color:#475569;margin-bottom:7px;">Contraseña</label>
+        <input name="password" type="password" value="{{ loginForm.password }}" onInput="{{ onLoginField }}" placeholder="••••••••" style="width:100%;padding:12px 14px;border:1px solid #e2e8f0;border-radius:11px;font-size:14px;font-family:inherit;color:#0f172a;background:#fff;margin-bottom:16px;" style-focus="border-color:#1e40af;box-shadow:0 0 0 3px rgba(30,64,175,.13)" />
+
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;">
+          <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#475569;font-weight:600;cursor:pointer;">
+            <input type="checkbox" style="width:15px;height:15px;accent-color:#1e40af;cursor:pointer;" /> Recordarme
+          </label>
+          <a style="font-size:13px;font-weight:700;color:{{ s.linkColor }};cursor:pointer;">¿Olvidaste tu contraseña?</a>
+        </div>
+
+        <button onClick="{{ onLogin }}" style="{{ s.btnLogin }}">Iniciar sesión</button>
+        <div style="text-align:center;font-size:12.5px;color:#94a3b8;margin-top:16px;">Demo — usa cualquier correo y contraseña para entrar.</div>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ===================== APP ===================== -->
+  <sc-if value="{{ isApp }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;height:100%;width:100%;overflow:hidden;position:relative;">
+
+    <!-- mobile drawer backdrop -->
+    <sc-if value="{{ showBackdrop }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ closeDrawer }}" style="position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:55;animation:jacoFade .2s ease;"></div>
+    </sc-if>
+
+    <!-- SIDEBAR -->
+    <aside style="{{ L.sidebar }}">
+      <div style="{{ L.logoRow }}">
+        <div style="width:38px;height:38px;border-radius:11px;background:{{ s.brandMark }};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="9" r="3.4"/><path d="M3 19c2.5-3 6-4.5 9-4.5s6.5 1.5 9 4.5"/></svg>
+        </div>
+        <div style="{{ L.logoWord }}">
+          <div style="font-size:16px;font-weight:800;color:#fff;letter-spacing:-.01em;">Jacó<span style="color:#93b4f7;"> SaaS</span></div>
+          <div style="font-size:10.5px;font-weight:600;color:rgba(255,255,255,.42);letter-spacing:.04em;text-transform:uppercase;margin-top:2px;">Reservas</div>
+        </div>
+      </div>
+
+      <div style="{{ L.menuHeading }}">Menú</div>
+      <nav style="display:flex;flex-direction:column;width:100%;">
+        <a onClick="{{ go.dashboard }}" style="{{ navStyles.dashboard }}">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;"><rect x="3" y="3" width="7" height="7" rx="1.6"/><rect x="14" y="3" width="7" height="7" rx="1.6"/><rect x="3" y="14" width="7" height="7" rx="1.6"/><rect x="14" y="14" width="7" height="7" rx="1.6"/></svg>
+          <span style="{{ L.navLabel }}">Dashboard</span>
+        </a>
+        <a onClick="{{ go.reservas }}" style="{{ navStyles.reservas }}">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;"><rect x="3" y="4.5" width="18" height="16.5" rx="2.4"/><line x1="3" y1="9.5" x2="21" y2="9.5"/><line x1="8" y1="2.5" x2="8" y2="6"/><line x1="16" y1="2.5" x2="16" y2="6"/></svg>
+          <span style="{{ L.navLabel }}">Reservas</span>
+        </a>
+        <a onClick="{{ go.servicios }}" style="{{ navStyles.servicios }}">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;"><circle cx="12" cy="12" r="9"/><line x1="3" y1="12" x2="21" y2="12"/><path d="M12 3c2.6 2.4 4 5.6 4 9s-1.4 6.6-4 9c-2.6-2.4-4-5.6-4-9s1.4-6.6 4-9z"/></svg>
+          <span style="{{ L.navLabel }}">Servicios</span>
+        </a>
+        <a onClick="{{ go.staff }}" style="{{ navStyles.staff }}">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.6 3-5.6 6-5.6s6 2 6 5.6"/><path d="M16 5.2A2.8 2.8 0 0 1 16 10.6"/><path d="M18 14.6c2.2.5 3.8 2.2 3.8 4.4"/></svg>
+          <span style="{{ L.navLabel }}">Staff</span>
+        </a>
+        <a onClick="{{ go.config }}" style="{{ navStyles.config }}">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;"><line x1="4" y1="7" x2="20" y2="7"/><circle cx="9" cy="7" r="2.4" fill="#101a36"/><line x1="4" y1="17" x2="20" y2="17"/><circle cx="15" cy="17" r="2.4" fill="#101a36"/></svg>
+          <span style="{{ L.navLabel }}">Configuración</span>
+        </a>
+      </nav>
+
+      <div style="{{ L.userChip }}">
+        <div style="width:34px;height:34px;border-radius:9px;background:{{ s.brandMark }};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12.5px;flex-shrink:0;">DM</div>
+        <div style="{{ L.userText }}">
+          <div style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Diego Mora</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.45);">Administrador</div>
+        </div>
+        <a onClick="{{ onLogout }}" style="{{ L.logoutBtn }}" title="Cerrar sesión">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 5H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h3"/><polyline points="14 16 19 12 14 8"/><line x1="19" y1="12" x2="9" y2="12"/></svg>
+        </a>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main style="flex:1;display:flex;flex-direction:column;min-width:0;">
+
+      <header style="{{ L.topbar }}">
+        <div style="display:flex;align-items:center;gap:13px;min-width:0;">
+          <sc-if value="{{ showHamburger }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ toggleDrawer }}" style="width:38px;height:38px;border-radius:10px;border:1px solid #e8ecf2;background:#fff;color:#334155;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+            </button>
+          </sc-if>
+          <div style="line-height:1.2;min-width:0;">
+            <div style="{{ L.pageTitle }}">{{ pageTitle }}</div>
+            <div style="{{ L.pageSub }}">{{ pageSubtitle }}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+          <sc-if value="{{ showDateChip }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#475569;background:#f1f5f9;border-radius:10px;padding:9px 14px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4.5" width="18" height="16.5" rx="2.4"/><line x1="3" y1="9.5" x2="21" y2="9.5"/></svg>
+              27 jun 2026
+            </div>
+          </sc-if>
+          <sc-if value="{{ showNewButton }}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{ openForm }}" style="{{ s.btnPrimary }}">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" style="flex-shrink:0;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              <span style="{{ L.newBtnLabel }}">Nueva reserva</span>
+            </button>
+          </sc-if>
+        </div>
+      </header>
+
+      <div style="{{ L.content }}">
+
+        <!-- ===== DASHBOARD ===== -->
+        <sc-if value="{{ isDashboard }}" hint-placeholder-val="{{ true }}">
+        <div style="animation:jacoFade .25s ease;">
+          <div style="{{ L.statsGrid }}">
+            <div style="background:#fff;border:1px solid #e8ecf2;border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:14px;box-shadow:0 1px 2px rgba(16,26,54,.03);">
+              <div style="display:flex;align-items:center;justify-content:space-between;">
+                <span style="font-size:13px;font-weight:700;color:#64748b;">Reservas hoy</span>
+                <span style="{{ s.statIcon }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="4.5" width="18" height="16.5" rx="2.4"/><line x1="3" y1="9.5" x2="21" y2="9.5"/><line x1="8" y1="2.5" x2="8" y2="6"/></svg></span>
+              </div>
+              <div style="font-size:38px;font-weight:800;letter-spacing:-.03em;line-height:1;color:#0f172a;">12</div>
+              <div style="display:flex;align-items:center;gap:7px;font-size:12.5px;"><span style="display:inline-flex;align-items:center;gap:3px;font-weight:700;color:#15803d;background:#dcfce7;padding:2px 7px;border-radius:6px;">↑ 8%</span><span style="color:#94a3b8;">vs. ayer</span></div>
+            </div>
+            <div style="background:#fff;border:1px solid #e8ecf2;border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:14px;box-shadow:0 1px 2px rgba(16,26,54,.03);">
+              <div style="display:flex;align-items:center;justify-content:space-between;">
+                <span style="font-size:13px;font-weight:700;color:#64748b;">Clientes nuevos</span>
+                <span style="{{ s.statIcon }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.6 3-5.6 6-5.6s6 2 6 5.6"/><line x1="19" y1="7" x2="19" y2="13"/><line x1="16" y1="10" x2="22" y2="10"/></svg></span>
+              </div>
+              <div style="font-size:38px;font-weight:800;letter-spacing:-.03em;line-height:1;color:#0f172a;">34</div>
+              <div style="display:flex;align-items:center;gap:7px;font-size:12.5px;"><span style="display:inline-flex;align-items:center;gap:3px;font-weight:700;color:#15803d;background:#dcfce7;padding:2px 7px;border-radius:6px;">↑ 12%</span><span style="color:#94a3b8;">este mes</span></div>
+            </div>
+            <div style="background:#fff;border:1px solid #e8ecf2;border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:14px;box-shadow:0 1px 2px rgba(16,26,54,.03);">
+              <div style="display:flex;align-items:center;justify-content:space-between;">
+                <span style="font-size:13px;font-weight:700;color:#64748b;">Ingresos del mes</span>
+                <span style="{{ s.statIcon }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 6.5C17 4.6 14.8 3.5 12 3.5S7 4.8 7 7s2.2 3 5 3.5 5 1.5 5 3.7-2.2 3.3-5 3.3-5-1.1-5-3"/></svg></span>
+              </div>
+              <div style="font-size:32px;font-weight:800;letter-spacing:-.03em;line-height:1;color:#0f172a;">₡4.850.000</div>
+              <div style="display:flex;align-items:center;gap:7px;font-size:12.5px;"><span style="display:inline-flex;align-items:center;gap:3px;font-weight:700;color:#15803d;background:#dcfce7;padding:2px 7px;border-radius:6px;">↑ 23%</span><span style="color:#94a3b8;">vs. mayo</span></div>
+            </div>
+          </div>
+
+          <div style="background:#fff;border:1px solid #e8ecf2;border-radius:16px;box-shadow:0 1px 2px rgba(16,26,54,.03);overflow:hidden;">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid #eef2f6;">
+              <div>
+                <div style="font-size:15.5px;font-weight:800;color:#0f172a;">Próximas reservas</div>
+                <div style="font-size:12.5px;color:#94a3b8;margin-top:2px;">Agenda de los próximos días</div>
+              </div>
+              <a onClick="{{ go.reservas }}" style="font-size:13px;font-weight:700;color:{{ s.linkColor }};cursor:pointer;white-space:nowrap;">Ver todas →</a>
+            </div>
+
+            <sc-if value="{{ showTable }}" hint-placeholder-val="{{ true }}">
+            <div style="overflow-x:auto;">
+              <table style="width:100%;border-collapse:collapse;min-width:680px;">
+                <thead><tr style="background:#fafbfc;">
+                  <th style="text-align:left;padding:12px 20px;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;">Cliente</th>
+                  <th style="text-align:left;padding:12px 16px;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;">Servicio</th>
+                  <th style="text-align:left;padding:12px 16px;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;">Fecha</th>
+                  <th style="text-align:center;padding:12px 16px;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;">Personas</th>
+                  <th style="text-align:left;padding:12px 20px;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;">Estado</th>
+                </tr></thead>
+                <tbody>
+                  <sc-for list="{{ dashboardRows }}" as="row" hint-placeholder-count="5">
+                    <tr style="border-top:1px solid #eef2f6;">
+                      <td style="padding:13px 20px;"><div style="display:flex;align-items:center;gap:11px;"><div style="{{ row.avatarStyle }}">{{ row.initials }}</div><div style="line-height:1.25;"><div style="font-size:13.5px;font-weight:700;color:#1e293b;">{{ row.cliente }}</div><div style="font-size:11.5px;color:#94a3b8;">{{ row.email }}</div></div></div></td>
+                      <td style="padding:13px 16px;font-size:13.5px;font-weight:600;color:#475569;">{{ row.servicio }}</td>
+                      <td style="padding:13px 16px;font-size:13.5px;color:#475569;">{{ row.fecha }}</td>
+                      <td style="padding:13px 16px;font-size:13.5px;font-weight:700;color:#334155;text-align:center;">{{ row.personas }}</td>
+                      <td style="padding:13px 20px;"><span style="{{ row.badgeStyle }}">{{ row.badgeLabel }}</span></td>
+                    </tr>
+                  </sc-for>
+                </tbody>
+              </table>
+            </div>
+            </sc-if>
+
+            <sc-if value="{{ showCards }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:11px;padding:14px;">
+              <sc-for list="{{ dashboardRows }}" as="row" hint-placeholder-count="5">
+                <div style="background:#fff;border:1px solid #eef2f6;border-radius:13px;padding:13px 14px;">
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:11px;">
+                    <div style="display:flex;align-items:center;gap:11px;min-width:0;"><div style="{{ row.avatarStyle }}">{{ row.initials }}</div><div style="line-height:1.25;min-width:0;"><div style="font-size:14px;font-weight:700;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ row.cliente }}</div><div style="font-size:11.5px;color:#94a3b8;">{{ row.servicio }}</div></div></div>
+                    <span style="{{ row.badgeStyle }}">{{ row.badgeLabel }}</span>
+                  </div>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;border-top:1px solid #f1f5f9;padding-top:10px;">
+                    <div><div style="font-size:10.5px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px;">Fecha</div><div style="font-size:13px;font-weight:700;color:#334155;">{{ row.fecha }}</div></div>
+                    <div><div style="font-size:10.5px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px;">Personas</div><div style="font-size:13px;font-weight:700;color:#334155;">{{ row.personas }}</div></div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+            </sc-if>
+          </div>
+        </div>
+        </sc-if>
+
+        <!-- ===== RESERVAS ===== -->
+        <sc-if value="{{ isReservas }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:jacoFade .25s ease;">
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px;">
+            <div style="position:relative;flex:1;min-width:180px;max-width:340px;">
+              <svg style="position:absolute;left:13px;top:50%;transform:translateY(-50%);pointer-events:none;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
+              <input value="{{ filterText }}" onInput="{{ onFilterText }}" placeholder="Buscar cliente…" style="width:100%;padding:10px 13px 10px 38px;border:1px solid #e2e8f0;border-radius:10px;font-size:13.5px;font-family:inherit;background:#fff;color:#0f172a;" />
+            </div>
+            <select value="{{ filterEstado }}" onChange="{{ onFilterEstado }}" style="padding:10px 36px 10px 13px;border:1px solid #e2e8f0;border-radius:10px;font-size:13.5px;font-weight:600;font-family:inherit;background:#fff;color:#334155;cursor:pointer;appearance:none;background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 fill=%22none%22 stroke=%22%2364748b%22 stroke-width=%222%22><path d=%22M2 4l4 4 4-4%22/></svg>');background-repeat:no-repeat;background-position:right 13px center;">
+              <option value="todos">Todos los estados</option>
+              <option value="pendiente">Pendiente</option>
+              <option value="confirmado">Confirmado</option>
+              <option value="cancelado">Cancelado</option>
+              <option value="completado">Completado</option>
+            </select>
+            <input type="date" value="{{ filterFecha }}" onChange="{{ onFilterFecha }}" style="padding:10px 13px;border:1px solid #e2e8f0;border-radius:10px;font-size:13.5px;font-weight:600;font-family:inherit;background:#fff;color:#334155;cursor:pointer;" />
+            <sc-if value="{{ filterActive }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ clearFilters }}" style="padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;font-weight:700;font-family:inherit;background:#fff;color:#64748b;cursor:pointer;">Limpiar</button>
+            </sc-if>
+            <div style="{{ L.resultCount }}">{{ resultCount }}</div>
+          </div>
+
+          <div style="background:#fff;border:1px solid #e8ecf2;border-radius:16px;box-shadow:0 1px 2px rgba(16,26,54,.03);overflow:hidden;">
+            <sc-if value="{{ showTable }}" hint-placeholder-val="{{ true }}">
+            <div style="overflow-x:auto;">
+              <table style="width:100%;border-collapse:collapse;min-width:820px;">
+                <thead><tr style="background:#fafbfc;">
+                  <th style="text-align:left;padding:13px 20px;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;">Cliente</th>
+                  <th style="text-align:left;padding:13px 16px;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;">Servicio</th>
+                  <th style="text-align:left;padding:13px 16px;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;">Fecha</th>
+                  <th style="text-align:center;padding:13px 16px;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;">Personas</th>
+                  <th style="text-align:right;padding:13px 16px;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;">Total</th>
+                  <th style="text-align:left;padding:13px 20px;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;">Estado</th>
+                </tr></thead>
+                <tbody>
+                  <sc-for list="{{ reservasRows }}" as="row" hint-placeholder-count="8">
+                    <tr style="border-top:1px solid #eef2f6;">
+                      <td style="padding:13px 20px;"><div style="display:flex;align-items:center;gap:11px;"><div style="{{ row.avatarStyle }}">{{ row.initials }}</div><div style="line-height:1.25;"><div style="font-size:13.5px;font-weight:700;color:#1e293b;">{{ row.cliente }}</div><div style="font-size:11.5px;color:#94a3b8;">{{ row.telefono }}</div></div></div></td>
+                      <td style="padding:13px 16px;font-size:13.5px;font-weight:600;color:#475569;">{{ row.servicio }}</td>
+                      <td style="padding:13px 16px;font-size:13.5px;color:#475569;">{{ row.fecha }}</td>
+                      <td style="padding:13px 16px;font-size:13.5px;font-weight:700;color:#334155;text-align:center;">{{ row.personas }}</td>
+                      <td style="padding:13px 16px;font-size:13.5px;font-weight:700;color:#0f172a;text-align:right;">{{ row.totalFmt }}</td>
+                      <td style="padding:13px 20px;"><span style="{{ row.badgeStyle }}">{{ row.badgeLabel }}</span></td>
+                    </tr>
+                  </sc-for>
+                </tbody>
+              </table>
+            </div>
+            </sc-if>
+
+            <sc-if value="{{ showCards }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:11px;padding:14px;">
+              <sc-for list="{{ reservasRows }}" as="row" hint-placeholder-count="6">
+                <div style="background:#fff;border:1px solid #eef2f6;border-radius:13px;padding:13px 14px;">
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:11px;">
+                    <div style="display:flex;align-items:center;gap:11px;min-width:0;"><div style="{{ row.avatarStyle }}">{{ row.initials }}</div><div style="line-height:1.25;min-width:0;"><div style="font-size:14px;font-weight:700;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ row.cliente }}</div><div style="font-size:11.5px;color:#94a3b8;">{{ row.servicio }}</div></div></div>
+                    <span style="{{ row.badgeStyle }}">{{ row.badgeLabel }}</span>
+                  </div>
+                  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;border-top:1px solid #f1f5f9;padding-top:10px;">
+                    <div><div style="font-size:10.5px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px;">Fecha</div><div style="font-size:12.5px;font-weight:700;color:#334155;">{{ row.fecha }}</div></div>
+                    <div><div style="font-size:10.5px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px;">Pers.</div><div style="font-size:12.5px;font-weight:700;color:#334155;">{{ row.personas }}</div></div>
+                    <div><div style="font-size:10.5px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px;">Total</div><div style="font-size:12.5px;font-weight:700;color:#0f172a;">{{ row.totalFmt }}</div></div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+            </sc-if>
+
+            <sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:48px 20px;text-align:center;color:#94a3b8;font-size:14px;font-weight:600;">No hay reservas que coincidan con los filtros.</div>
+            </sc-if>
+          </div>
+        </div>
+        </sc-if>
+
+        <!-- ===== PLACEHOLDER ===== -->
+        <sc-if value="{{ isPlaceholder }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:jacoFade .25s ease;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 20px;">
+          <div style="width:64px;height:64px;border-radius:18px;background:#eef2f8;display:flex;align-items:center;justify-content:center;color:#94a3b8;margin-bottom:18px;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="4"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+          </div>
+          <div style="font-size:18px;font-weight:800;color:#334155;">{{ pageTitle }}</div>
+          <div style="font-size:13.5px;color:#94a3b8;margin-top:6px;max-width:300px;">Este módulo está en construcción. Pronto podrás gestionarlo desde aquí.</div>
+        </div>
+        </sc-if>
+
+      </div>
+    </main>
+  </div>
+  </sc-if>
+
+  <!-- ===== NUEVA RESERVA SLIDE-OVER ===== -->
+  <sc-if value="{{ showForm }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;inset:0;z-index:70;display:flex;justify-content:flex-end;">
+    <div onClick="{{ closeForm }}" style="position:absolute;inset:0;background:rgba(15,23,42,.45);animation:jacoFade .2s ease;"></div>
+    <div style="position:relative;width:472px;max-width:92vw;height:100%;background:#fff;display:flex;flex-direction:column;box-shadow:-8px 0 40px rgba(15,23,42,.18);animation:jacoSlide .26s cubic-bezier(.16,.84,.44,1);">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;padding:24px 26px 20px;border-bottom:1px solid #eef2f6;">
+        <div>
+          <div style="font-size:18px;font-weight:800;letter-spacing:-.02em;color:#0f172a;">Nueva reserva</div>
+          <div style="font-size:13px;color:#64748b;margin-top:3px;">Completa los datos del cliente y el servicio.</div>
+        </div>
+        <button onClick="{{ closeForm }}" style="width:34px;height:34px;border-radius:9px;border:1px solid #e8ecf2;background:#fff;color:#64748b;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+        </button>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:22px 26px;">
+        <div style="margin-bottom:16px;">
+          <label style="display:block;font-size:12.5px;font-weight:700;color:#475569;margin-bottom:7px;">Nombre del cliente</label>
+          <input name="nombre" value="{{ form.nombre }}" onInput="{{ onField }}" placeholder="Ej. Carlos Jiménez" style="width:100%;padding:11px 13px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:inherit;color:#0f172a;background:#fff;" style-focus="border-color:#1e40af;box-shadow:0 0 0 3px rgba(30,64,175,.13)" />
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
+          <div><label style="display:block;font-size:12.5px;font-weight:700;color:#475569;margin-bottom:7px;">Teléfono</label><input name="telefono" value="{{ form.telefono }}" onInput="{{ onField }}" placeholder="+506 8888 8888" style="width:100%;padding:11px 13px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:inherit;color:#0f172a;background:#fff;" style-focus="border-color:#1e40af;box-shadow:0 0 0 3px rgba(30,64,175,.13)" /></div>
+          <div><label style="display:block;font-size:12.5px;font-weight:700;color:#475569;margin-bottom:7px;">Email</label><input name="email" value="{{ form.email }}" onInput="{{ onField }}" placeholder="correo@mail.com" style="width:100%;padding:11px 13px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:inherit;color:#0f172a;background:#fff;" style-focus="border-color:#1e40af;box-shadow:0 0 0 3px rgba(30,64,175,.13)" /></div>
+        </div>
+        <div style="margin-bottom:16px;">
+          <label style="display:block;font-size:12.5px;font-weight:700;color:#475569;margin-bottom:7px;">Servicio</label>
+          <select name="servicio" value="{{ form.servicio }}" onChange="{{ onField }}" style="width:100%;padding:11px 36px 11px 13px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;font-weight:600;font-family:inherit;color:#0f172a;background:#fff;cursor:pointer;appearance:none;background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 fill=%22none%22 stroke=%22%2364748b%22 stroke-width=%222%22><path d=%22M2 4l4 4 4-4%22/></svg>');background-repeat:no-repeat;background-position:right 14px center;">
+            <option value="Clase de surf">Clase de surf</option>
+            <option value="Tour ATV">Tour ATV</option>
+            <option value="Pesca">Pesca</option>
+            <option value="Canopy">Canopy</option>
+          </select>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
+          <div><label style="display:block;font-size:12.5px;font-weight:700;color:#475569;margin-bottom:7px;">Fecha</label><input type="date" name="fecha" value="{{ form.fecha }}" onChange="{{ onField }}" style="width:100%;padding:11px 13px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:inherit;color:#0f172a;background:#fff;" /></div>
+          <div><label style="display:block;font-size:12.5px;font-weight:700;color:#475569;margin-bottom:7px;">Hora</label><input type="time" name="hora" value="{{ form.hora }}" onChange="{{ onField }}" style="width:100%;padding:11px 13px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:inherit;color:#0f172a;background:#fff;" /></div>
+        </div>
+        <div style="margin-bottom:16px;">
+          <label style="display:block;font-size:12.5px;font-weight:700;color:#475569;margin-bottom:7px;">Número de personas</label>
+          <input type="number" min="1" name="personas" value="{{ form.personas }}" onInput="{{ onField }}" placeholder="2" style="width:100%;padding:11px 13px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:inherit;color:#0f172a;background:#fff;" />
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div><label style="display:block;font-size:12.5px;font-weight:700;color:#475569;margin-bottom:7px;">Total (₡)</label><input type="number" name="total" value="{{ form.total }}" onInput="{{ onField }}" placeholder="90000" style="width:100%;padding:11px 13px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:inherit;color:#0f172a;background:#fff;" /></div>
+          <div><label style="display:block;font-size:12.5px;font-weight:700;color:#475569;margin-bottom:7px;">Depósito (₡)</label><input type="number" name="deposito" value="{{ form.deposito }}" onInput="{{ onField }}" placeholder="30000" style="width:100%;padding:11px 13px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:inherit;color:#0f172a;background:#fff;" /></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;padding:18px 26px;border-top:1px solid #eef2f6;">
+        <button onClick="{{ closeForm }}" style="flex:1;padding:12px;border:1px solid #e2e8f0;border-radius:11px;font-size:14px;font-weight:700;font-family:inherit;background:#fff;color:#475569;cursor:pointer;">Cancelar</button>
+        <button onClick="{{ onSubmit }}" style="{{ s.btnSubmit }}">Crear reserva</button>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:820},&quot;primaryColor&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#1e40af&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Marca&quot;}}">
+class Component extends DCLogic {
+  state = {
+    authed: false,
+    loginForm: { email:'', password:'' },
+    width: 1280,
+    drawerOpen: false,
+    view: 'dashboard',
+    showForm: false,
+    filterEstado: 'todos',
+    filterFecha: '',
+    filterText: '',
+    form: { nombre:'', telefono:'', email:'', servicio:'Clase de surf', fecha:'', hora:'', personas:'2', total:'', deposito:'' },
+    rows: [
+      { id:1, cliente:'Carlos Jiménez', email:'carlos.j@mail.com', telefono:'+506 8712 4490', servicio:'Clase de surf', fecha:'27 Jun 2026', personas:2, total:90000, estado:'confirmado' },
+      { id:2, cliente:'Sophie Müller', email:'sophie.m@mail.de', telefono:'+49 170 332 118', servicio:'Tour ATV', fecha:'27 Jun 2026', personas:4, total:160000, estado:'pendiente' },
+      { id:3, cliente:'James Carter', email:'jcarter@mail.com', telefono:'+1 305 884 2210', servicio:'Pesca', fecha:'28 Jun 2026', personas:3, total:285000, estado:'confirmado' },
+      { id:4, cliente:'María Fernández', email:'maria.f@mail.cr', telefono:'+506 8420 7755', servicio:'Canopy', fecha:'28 Jun 2026', personas:6, total:210000, estado:'completado' },
+      { id:5, cliente:"Liam O'Brien", email:'liam.ob@mail.ie', telefono:'+353 85 770 9921', servicio:'Clase de surf', fecha:'29 Jun 2026', personas:1, total:45000, estado:'pendiente' },
+      { id:6, cliente:'Ana Vargas', email:'ana.vargas@mail.cr', telefono:'+506 8901 3320', servicio:'Tour ATV', fecha:'29 Jun 2026', personas:2, total:80000, estado:'cancelado' },
+      { id:7, cliente:'Noah Schmidt', email:'noah.s@mail.de', telefono:'+49 152 998 4471', servicio:'Pesca', fecha:'30 Jun 2026', personas:5, total:475000, estado:'confirmado' },
+      { id:8, cliente:'Emma Rossi', email:'emma.rossi@mail.it', telefono:'+39 333 552 8810', servicio:'Canopy', fecha:'01 Jul 2026', personas:8, total:280000, estado:'confirmado' },
+    ],
+  };
+
+  componentDidMount(){
+    this._onResize = () => this.setState({ width: window.innerWidth });
+    window.addEventListener('resize', this._onResize);
+    this.setState({ width: window.innerWidth });
+  }
+  componentWillUnmount(){ window.removeEventListener('resize', this._onResize); }
+
+  fmt(n){ return '₡' + Number(n || 0).toLocaleString('de-DE'); }
+  initials(name){ return (name || '').trim().split(/\s+/).slice(0,2).map(p => p[0] || '').join('').toUpperCase(); }
+  fmtDate(iso){
+    if(!iso) return '—';
+    const m = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    const p = iso.split('-');
+    if(p.length !== 3) return iso;
+    return p[2] + ' ' + (m[parseInt(p[1],10)-1] || '') + ' ' + p[0];
+  }
+  hexToRgba(hex, a){
+    const h = (hex || '#1e40af').replace('#','');
+    const r = parseInt(h.substring(0,2),16), g = parseInt(h.substring(2,4),16), b = parseInt(h.substring(4,6),16);
+    return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+  }
+  badge(estado){
+    const map = {
+      pendiente:  { label:'Pendiente',  bg:'#fef3c7', color:'#92400e' },
+      confirmado: { label:'Confirmado', bg:'#dcfce7', color:'#15803d' },
+      cancelado:  { label:'Cancelado',  bg:'#fee2e2', color:'#b91c1c' },
+      completado: { label:'Completado', bg:'#dbeafe', color:'#1d4ed8' },
+    };
+    const c = map[estado] || map.pendiente;
+    return { label:c.label, style:{ display:'inline-flex', alignItems:'center', padding:'4px 11px', borderRadius:'999px', fontSize:'12px', fontWeight:700, background:c.bg, color:c.color, whiteSpace:'nowrap' } };
+  }
+
+  setView(v){ this.setState({ view:v, showForm:false, drawerOpen:false }); }
+  openForm(){ this.setState({ showForm:true }); }
+  closeForm(){ this.setState({ showForm:false }); }
+  toggleDrawer(){ this.setState(s => ({ drawerOpen: !s.drawerOpen })); }
+  closeDrawer(){ this.setState({ drawerOpen:false }); }
+  onLoginField(e){ const { name, value } = e.target; this.setState(s => ({ loginForm:{ ...s.loginForm, [name]: value } })); }
+  doLogin(){ this.setState({ authed:true }); }
+  doLogout(){ this.setState({ authed:false, view:'dashboard', drawerOpen:false, showForm:false }); }
+
+  onField(e){ const { name, value } = e.target; this.setState(s => ({ form:{ ...s.form, [name]: value } })); }
+  onSubmit(){
+    const f = this.state.form;
+    if(!f.nombre.trim()){ return; }
+    const newRow = { id:Date.now(), cliente:f.nombre.trim(), email:f.email || '—', telefono:f.telefono || '—', servicio:f.servicio, fecha:this.fmtDate(f.fecha), personas:parseInt(f.personas,10) || 1, total:parseInt(f.total,10) || 0, estado:'pendiente' };
+    this.setState(s => ({ rows:[newRow, ...s.rows], showForm:false, view:'reservas', form:{ nombre:'', telefono:'', email:'', servicio:'Clase de surf', fecha:'', hora:'', personas:'2', total:'', deposito:'' } }));
+  }
+
+  mapRow(r, primary){
+    const b = this.badge(r.estado);
+    return {
+      ...r,
+      initials: this.initials(r.cliente),
+      avatarStyle: { width:'34px', height:'34px', borderRadius:'9px', background:this.hexToRgba(primary,.12), color:primary, display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700, fontSize:'12px', flexShrink:0 },
+      badgeStyle: b.style,
+      badgeLabel: b.label,
+      totalFmt: this.fmt(r.total),
+    };
+  }
+
+  renderVals(){
+    const primary = this.props.primaryColor ?? '#1e40af';
+    const view = this.state.view;
+    const w = this.state.width;
+    const mobile = w < 768;
+    const tablet = !mobile && w < 1100;
+    const collapsed = tablet;
+    const drawerOpen = this.state.drawerOpen;
+
+    // ---- sidebar ----
+    const sidebarBase = { flexShrink:0, background:'#101a36', display:'flex', flexDirection:'column' };
+    let sidebar;
+    if(mobile){
+      sidebar = { ...sidebarBase, position:'fixed', top:0, left:0, height:'100%', width:'250px', zIndex:60, padding:'22px 16px', transform: drawerOpen ? 'translateX(0)' : 'translateX(-115%)', transition:'transform .28s cubic-bezier(.16,.84,.44,1)', boxShadow: drawerOpen ? '6px 0 36px rgba(0,0,0,.34)' : 'none' };
+    } else if(collapsed){
+      sidebar = { ...sidebarBase, width:'76px', padding:'22px 12px', alignItems:'center' };
+    } else {
+      sidebar = { ...sidebarBase, width:'248px', padding:'22px 16px' };
+    }
+
+    const iconOnly = collapsed; // tablet rail (mobile drawer keeps labels)
+    const navBase = { display:'flex', alignItems:'center', justifyContent: iconOnly ? 'center' : 'flex-start', gap: iconOnly ? '0' : '12px', padding: iconOnly ? '11px 0' : '10px 13px', borderRadius:'10px', fontSize:'14px', fontWeight:600, cursor:'pointer', textDecoration:'none', transition:'background .15s, color .15s', color:'rgba(255,255,255,.58)', marginBottom:'3px', width:'100%' };
+    const navOn = { ...navBase, background:'rgba(255,255,255,.13)', color:'#fff' };
+    const nav = v => (view === v ? navOn : navBase);
+
+    // ---- topbar / content ----
+    const titles = {
+      dashboard: ['Dashboard', 'Resumen de actividad de hoy'],
+      reservas:  ['Reservas', 'Gestiona todas las reservas'],
+      servicios: ['Servicios', 'Catálogo de experiencias'],
+      staff:     ['Staff', 'Equipo e instructores'],
+      config:    ['Configuración', 'Ajustes del negocio'],
+    };
+    const t = titles[view] || titles.dashboard;
+
+    const rows = this.state.rows;
+    const filterActive = this.state.filterEstado !== 'todos' || !!this.state.filterFecha || !!this.state.filterText.trim();
+    const txt = this.state.filterText.trim().toLowerCase();
+    const filtered = rows.filter(r => {
+      if(this.state.filterEstado !== 'todos' && r.estado !== this.state.filterEstado) return false;
+      if(this.state.filterFecha && this.fmtDate(this.state.filterFecha) !== r.fecha) return false;
+      if(txt && !r.cliente.toLowerCase().includes(txt)) return false;
+      return true;
+    });
+
+    const L = {
+      // login
+      loginBrand: { position:'relative', overflow:'hidden', flex:'1.05', background:'#101a36', color:'#fff', display: mobile ? 'none' : 'flex', flexDirection:'column', justifyContent:'space-between', padding:'48px' },
+      loginFormWrap: { flex:1, display:'flex', alignItems:'center', justifyContent:'center', padding: mobile ? '28px 22px' : '40px', background:'#f4f6f9' },
+      loginMobileLogo: { display: mobile ? 'flex' : 'none', alignItems:'center', gap:'11px', marginBottom:'26px' },
+      // sidebar pieces
+      sidebar,
+      logoRow: { display:'flex', alignItems:'center', gap:'11px', padding: iconOnly ? '6px 0 26px' : '6px 8px 26px', justifyContent: iconOnly ? 'center' : 'flex-start', width:'100%' },
+      logoWord: { display: iconOnly ? 'none' : 'block', lineHeight:1.05 },
+      menuHeading: { display: iconOnly ? 'none' : 'block', fontSize:'10.5px', fontWeight:700, color:'rgba(255,255,255,.32)', letterSpacing:'.09em', textTransform:'uppercase', padding:'0 10px 10px', width:'100%' },
+      navLabel: { display: iconOnly ? 'none' : 'inline' },
+      userChip: { marginTop:'auto', display:'flex', alignItems:'center', gap:'11px', padding: iconOnly ? '10px 0' : '10px', borderRadius:'12px', background:'rgba(255,255,255,.05)', justifyContent: iconOnly ? 'center' : 'flex-start', width:'100%' },
+      userText: { display: iconOnly ? 'none' : 'block', lineHeight:1.2, minWidth:0, flex:1 },
+      logoutBtn: { display: iconOnly ? 'none' : 'flex', alignItems:'center', justifyContent:'center', width:'30px', height:'30px', borderRadius:'8px', color:'rgba(255,255,255,.5)', cursor:'pointer', flexShrink:0 },
+      // topbar
+      topbar: { display:'flex', alignItems:'center', justifyContent:'space-between', gap:'14px', padding: mobile ? '14px 16px' : '20px 30px', borderBottom:'1px solid #e8ecf2', background:'#fff', flexShrink:0 },
+      pageTitle: { fontSize: mobile ? '17px' : '21px', fontWeight:800, letterSpacing:'-.02em', color:'#0f172a', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' },
+      pageSub: { display: mobile ? 'none' : 'block', fontSize:'13px', color:'#64748b', marginTop:'3px' },
+      newBtnLabel: { display: mobile ? 'none' : 'inline' },
+      content: { flex:1, overflowY:'auto', padding: mobile ? '18px 16px 40px' : (tablet ? '24px 22px 40px' : '28px 30px 40px') },
+      statsGrid: { display:'grid', gridTemplateColumns: mobile ? '1fr' : 'repeat(auto-fit, minmax(190px, 1fr))', gap:'18px', marginBottom: mobile ? '18px' : '24px' },
+      resultCount: { marginLeft:'auto', fontSize:'13px', color:'#94a3b8', fontWeight:600, display: mobile ? 'none' : 'block' },
+    };
+
+    return {
+      isLogin: !this.state.authed,
+      isApp: this.state.authed,
+      loginForm: this.state.loginForm,
+      onLoginField: e => this.onLoginField(e),
+      onLogin: () => this.doLogin(),
+      onLogout: () => this.doLogout(),
+
+      L,
+      showHamburger: mobile,
+      showBackdrop: mobile && drawerOpen,
+      showDateChip: !mobile,
+      toggleDrawer: () => this.toggleDrawer(),
+      closeDrawer: () => this.closeDrawer(),
+
+      isDashboard: view === 'dashboard',
+      isReservas: view === 'reservas',
+      isPlaceholder: ['servicios','staff','config'].includes(view),
+      showTable: !mobile,
+      showCards: mobile,
+      pageTitle: t[0],
+      pageSubtitle: t[1],
+      showNewButton: view === 'reservas' || view === 'dashboard',
+
+      go: {
+        dashboard: () => this.setView('dashboard'),
+        reservas: () => this.setView('reservas'),
+        servicios: () => this.setView('servicios'),
+        staff: () => this.setView('staff'),
+        config: () => this.setView('config'),
+      },
+      navStyles: { dashboard:nav('dashboard'), reservas:nav('reservas'), servicios:nav('servicios'), staff:nav('staff'), config:nav('config') },
+
+      dashboardRows: rows.slice(0,5).map(r => this.mapRow(r, primary)),
+      reservasRows: filtered.map(r => this.mapRow(r, primary)),
+      noResults: filtered.length === 0,
+      resultCount: filtered.length + (filtered.length === 1 ? ' reserva' : ' reservas'),
+
+      filterEstado: this.state.filterEstado,
+      filterFecha: this.state.filterFecha,
+      filterText: this.state.filterText,
+      filterActive,
+      onFilterEstado: e => this.setState({ filterEstado: e.target.value }),
+      onFilterFecha: e => this.setState({ filterFecha: e.target.value }),
+      onFilterText: e => this.setState({ filterText: e.target.value }),
+      clearFilters: () => this.setState({ filterEstado:'todos', filterFecha:'', filterText:'' }),
+
+      showForm: this.state.showForm,
+      form: this.state.form,
+      onField: e => this.onField(e),
+      onSubmit: () => this.onSubmit(),
+      openForm: () => this.openForm(),
+      closeForm: () => this.closeForm(),
+
+      s: {
+        brandMark: primary,
+        linkColor: primary,
+        statIcon: { width:'34px', height:'34px', borderRadius:'10px', background:this.hexToRgba(primary,.1), color:primary, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 },
+        btnPrimary: { display:'inline-flex', alignItems:'center', gap:'8px', background:primary, color:'#fff', border:'none', borderRadius:'11px', padding: mobile ? '11px 13px' : '11px 17px', fontSize:'14px', fontWeight:700, cursor:'pointer', fontFamily:'inherit', boxShadow:'0 2px 6px ' + this.hexToRgba(primary,.32), whiteSpace:'nowrap' },
+        btnSubmit: { flex:2, padding:'12px', border:'none', borderRadius:'11px', fontSize:'14px', fontWeight:700, fontFamily:'inherit', background:primary, color:'#fff', cursor:'pointer', boxShadow:'0 2px 6px ' + this.hexToRgba(primary,.32) },
+        btnLogin: { width:'100%', padding:'13px', border:'none', borderRadius:'11px', fontSize:'15px', fontWeight:700, fontFamily:'inherit', background:primary, color:'#fff', cursor:'pointer', boxShadow:'0 2px 8px ' + this.hexToRgba(primary,.34) },
+      },
+    };
+  }
+}
+</script>
+</body>
+</html>
