@@ -1,0 +1,137 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tenant {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  email     String
+  phone     String?
+  plan      String   @default("basic")
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users        User[]
+  modules      TenantModule[]
+  settings     TenantSetting?
+  bookings     Booking[]
+  staffMembers Staff[]
+  services     Service[]
+}
+
+model Module {
+  id          String  @id @default(cuid())
+  key         String  @unique
+  name        String
+  description String?
+  price       Float   @default(0)
+
+  tenants TenantModule[]
+}
+
+model TenantModule {
+  id       String  @id @default(cuid())
+  tenantId String
+  moduleId String
+  active   Boolean @default(true)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  module Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, moduleId])
+}
+
+model User {
+  id        String   @id
+  email     String   @unique
+  name      String?
+  role      String   @default("admin")
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TenantSetting {
+  id        String   @id @default(cuid())
+  tenantId  String   @unique
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  businessName       String?
+  businessPhone      String?
+  businessEmail      String?
+  address            String?
+  logoUrl            String?
+  colorPrimary       String   @default("#3b82f6")
+  paymentInfo        Json?
+  slotMinutes        Int      @default(60)
+  maxPaxPerBooking   Int      @default(10)
+  advanceNoticeHours Int      @default(2)
+
+  updatedAt DateTime @updatedAt
+}
+
+model Service {
+  id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  name        String
+  description String?
+  duration    Int?
+  price       Float?
+  active      Boolean  @default(true)
+
+  bookings Booking[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Booking {
+  id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  customerName  String
+  customerPhone String?
+  customerEmail String?
+  serviceId     String?
+  service       Service?  @relation(fields: [serviceId], references: [id])
+  serviceName   String
+  date          DateTime
+  time          String?
+  pax           Int       @default(1)
+  status        String    @default("pending")
+  deposit       Float?
+  depositPaid   Boolean   @default(false)
+  total         Float?
+  notes         String?
+  staffId       String?
+  staff         Staff?    @relation(fields: [staffId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Staff {
+  id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  name      String
+  phone     String?
+  email     String?
+  role      String?
+  active    Boolean  @default(true)
+
+  bookings Booking[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
