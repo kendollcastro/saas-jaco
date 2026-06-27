@@ -12,7 +12,7 @@ export async function getActiveModules(tenantId: string) {
     where: { tenantId, active: true },
     include: { module: true },
   });
-  return modules.map((m) => m.module);
+  return modules.map((m: { module: { id: string; key: string; name: string; description: string | null; price: number } }) => m.module);
 }
 
 export async function isModuleActive(tenantId: string, moduleKey: string) {

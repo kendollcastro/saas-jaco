@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function NewBookingPage() {
   const router = useRouter();
@@ -38,116 +41,76 @@ export default function NewBookingPage() {
   }
 
   return (
-    <div>
+    <div className="max-w-2xl">
       <h1 className="text-2xl font-bold mb-6">Nueva reserva</h1>
-      <form onSubmit={handleSubmit} className="max-w-lg space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del cliente</label>
-          <input
-            name="customerName"
-            required
-            className="w-full border border-gray-300 rounded-lg px-3 py-2"
-          />
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
-            <input
-              name="customerPhone"
-              type="tel"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input
-              name="customerEmail"
-              type="email"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-            />
-          </div>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Servicio</label>
-          <input
-            name="serviceName"
-            required
-            placeholder="Ej: Clase de surf, Tour ATV, Pesca"
-            className="w-full border border-gray-300 rounded-lg px-3 py-2"
-          />
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
-            <input
-              name="date"
-              type="date"
-              required
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Hora</label>
-            <input
-              name="time"
-              type="time"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-            />
-          </div>
-        </div>
-        <div className="grid grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Personas</label>
-            <input
-              name="pax"
-              type="number"
-              min="1"
-              defaultValue="1"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Total (₡)</label>
-            <input
-              name="total"
-              type="number"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Depósito (₡)</label>
-            <input
-              name="deposit"
-              type="number"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-            />
-          </div>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Notas</label>
-          <textarea
-            name="notes"
-            rows={3}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2"
-          />
-        </div>
-        <div className="flex gap-3">
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
-          >
-            {loading ? "Guardando..." : "Crear reserva"}
-          </button>
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="px-6 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
-          >
-            Cancelar
-          </button>
-        </div>
-      </form>
+      <Card>
+        <CardHeader>
+          <CardTitle>Datos de la reserva</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Nombre del cliente</label>
+              <Input name="customerName" required placeholder="Ej: Juan Pérez" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Teléfono</label>
+                <Input name="customerPhone" type="tel" placeholder="+506 8888 8888" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Email</label>
+                <Input name="customerEmail" type="email" placeholder="cliente@email.com" />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Servicio</label>
+              <Input name="serviceName" required placeholder="Ej: Clase de surf, Tour ATV, Pesca" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Fecha</label>
+                <Input name="date" type="date" required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Hora</label>
+                <Input name="time" type="time" />
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Personas</label>
+                <Input name="pax" type="number" min="1" defaultValue="1" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Total (₡)</label>
+                <Input name="total" type="number" placeholder="0" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Depósito (₡)</label>
+                <Input name="deposit" type="number" placeholder="0" />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Notas</label>
+              <textarea
+                name="notes"
+                rows={3}
+                className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                placeholder="Notas adicionales..."
+              />
+            </div>
+            <div className="flex gap-3">
+              <Button type="submit" disabled={loading}>
+                {loading ? "Guardando..." : "Crear reserva"}
+              </Button>
+              <Button type="button" variant="outline" onClick={() => router.back()}>
+                Cancelar
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }
