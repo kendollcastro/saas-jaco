@@ -29,6 +29,9 @@ export default function LoginPage() {
       return;
     }
 
+    // Sync user to our DB
+    await fetch("/api/auth/sync", { method: "POST" });
+
     router.push("/dashboard");
     router.refresh();
   }
