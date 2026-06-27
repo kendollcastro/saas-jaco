@@ -1,19 +1,32 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getApiUser } from "@/lib/api-auth";
 
 export async function GET() {
-  const services = await prisma.service.findMany({ orderBy: { name: "asc" } });
+  const apiUser = await getApiUser();
+  if (!apiUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const services = await prisma.service.findMany({
+    where: { tenantId: apiUser.tenantId },
+    orderBy: { name: "asc" },
+  });
   return NextResponse.json(services);
 }
 
 export async function POST(request: Request) {
+  const apiUser = await getApiUser();
+  if (!apiUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   const body = await request.json();
-  const tenantId = "TENANT_ID_PLACEHOLDER";
+  if (!body.name) {
+    return NextResponse.json({ error: "Name is required" }, { status: 400 });
+  }
 
   const service = await prisma.service.create({
     data: {
-      tenantId,
+      tenantId: apiUser.tenantId,
       name: body.name,
+      description: body.description || null,
       price: body.price ? parseFloat(body.price) : null,
       duration: body.duration ? parseInt(body.duration) : null,
     },

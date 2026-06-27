@@ -4,8 +4,10 @@ import { NextResponse, type NextRequest } from "next/server";
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Only apply to dashboard routes
-  if (!pathname.startsWith("/dashboard")) {
+  const isDashboard = pathname.startsWith("/dashboard");
+  const isApi = pathname.startsWith("/api/") && !pathname.startsWith("/api/auth");
+
+  if (!isDashboard && !isApi) {
     return NextResponse.next();
   }
 
@@ -37,6 +39,9 @@ export async function proxy(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (!user) {
+    if (isApi) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
@@ -44,5 +49,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*"],
+  matcher: ["/dashboard/:path*", "/api/:path*"],
 };
