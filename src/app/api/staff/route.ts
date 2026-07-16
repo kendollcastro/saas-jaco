@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getApiUser } from "@/lib/api-auth";
+import { staffSchema } from "@/lib/validations";
+import { normalizePhone } from "@/lib/phone";
 
 export async function GET() {
   const apiUser = await getApiUser();
@@ -18,17 +20,20 @@ export async function POST(request: Request) {
   if (!apiUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await request.json();
-  if (!body.name) {
-    return NextResponse.json({ error: "Name is required" }, { status: 400 });
+  const parsed = staffSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.flatten().fieldErrors }, { status: 400 });
   }
+
+  const { name, phone, email, role } = parsed.data;
 
   const member = await prisma.staff.create({
     data: {
       tenantId: apiUser.tenantId,
-      name: body.name,
-      phone: body.phone || null,
-      email: body.email || null,
-      role: body.role || null,
+      name,
+      phone: normalizePhone(phone),
+      email: email || null,
+      role: role || null,
     },
   });
 

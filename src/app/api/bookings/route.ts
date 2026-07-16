@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getApiUser } from "@/lib/api-auth";
+import { bookingSchema } from "@/lib/validations";
+import { normalizePhone } from "@/lib/phone";
 
 export async function GET() {
   const apiUser = await getApiUser();
@@ -20,23 +22,26 @@ export async function POST(request: Request) {
   if (!apiUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await request.json();
-  if (!body.customerName || !body.serviceName || !body.date) {
-    return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+  const parsed = bookingSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.flatten().fieldErrors }, { status: 400 });
   }
+
+  const { customerName, customerPhone, customerEmail, serviceName, date, time, pax, total, deposit, notes } = parsed.data;
 
   const booking = await prisma.booking.create({
     data: {
       tenantId: apiUser.tenantId,
-      customerName: body.customerName,
-      customerPhone: body.customerPhone || null,
-      customerEmail: body.customerEmail || null,
-      serviceName: body.serviceName,
-      date: new Date(body.date),
-      time: body.time || null,
-      pax: body.pax || 1,
-      total: body.total ? parseFloat(body.total) : null,
-      deposit: body.deposit ? parseFloat(body.deposit) : null,
-      notes: body.notes || null,
+      customerName,
+      customerPhone: normalizePhone(customerPhone),
+      customerEmail: customerEmail || null,
+      serviceName,
+      date: new Date(date),
+      time: time || null,
+      pax: pax ?? 1,
+      total: total ?? null,
+      deposit: deposit ?? null,
+      notes: notes || null,
     },
   });
 

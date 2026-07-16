@@ -50,20 +50,20 @@ export default function RegisterPage() {
               </svg>
             </div>
             <div className="text-[19px] font-extrabold text-white tracking-tight">
-              Jacó<span className="text-[#93b4f7]"> SaaS</span>
+              Ola<span className="text-[#93b4f7]"> Saas</span>
             </div>
           </div>
         </div>
         <div className="relative max-w-[380px]">
           <div className="text-[34px] font-extrabold leading-tight tracking-tight text-white">
-            Gestiona tus reservas en la costa del Pacífico.
+            Gestioná tu negocio desde un solo lugar.
           </div>
           <div className="text-[15px] leading-relaxed text-white/60 mt-[18px]">
-            Clases de surf, tours ATV, pesca y canopy — todo tu negocio turístico en Jacó, organizado en un solo lugar.
+            Simplificá la gestión de tu negocio — reservas, membresías, inventario y más, todo en un solo lugar.
           </div>
         </div>
         <div className="relative text-[12.5px] text-white/40">
-          &copy; 2026 Jacó SaaS &middot; Hecho en Costa Rica 🇨🇷
+          &copy; 2026 Ola Saas &middot; Hecho en Costa Rica 🇨🇷
         </div>
       </div>
 
@@ -79,7 +79,7 @@ export default function RegisterPage() {
               </svg>
             </div>
             <div className="text-[17px] font-extrabold text-[#0f172a]">
-              Jacó<span className="text-[#1e40af]"> SaaS</span>
+              Ola<span className="text-[#1e40af]"> Saas</span>
             </div>
           </div>
 

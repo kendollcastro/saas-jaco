@@ -6,8 +6,8 @@ import { cn } from "@/lib/utils";
 const manrope = Manrope({ subsets: ["latin"], variable: "--font-manrope" });
 
 export const metadata: Metadata = {
-  title: "Jacó SaaS",
-  description: "SaaS modular para negocios en Jacó, Costa Rica",
+  title: "Ola Saas",
+  description: "SaaS modular para pequeños negocios en Costa Rica",
 };
 
 export default function RootLayout({
@@ -16,7 +16,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es" className={cn(manrope.variable)}>
+    <html lang="es" className={cn(manrope.variable)} suppressHydrationWarning>
       <body>{children}</body>
     </html>
   );

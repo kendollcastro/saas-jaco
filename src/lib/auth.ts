@@ -49,17 +49,21 @@ export async function syncUser() {
   }
 
   // Create user record
-  const user = await prisma.user.create({
-    data: {
+  const superEmails = (process.env.SUPER_ADMIN_EMAILS || "").split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
+  const role = superEmails.includes(email.toLowerCase()) ? "super_admin" : "admin";
+  await prisma.user.upsert({
+    where: { id: authUser.id },
+    update: { email, name, role },
+    create: {
       id: authUser.id,
       email,
       name,
-      role: "admin",
+      role,
       tenantId: tenant.id,
     },
   });
 
-  return user;
+  return await prisma.user.findUnique({ where: { id: authUser.id } });
 }
 
 export async function getCurrentUser() {

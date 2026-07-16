@@ -4,7 +4,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
       <div className="text-center max-w-md">
-        <h1 className="text-4xl font-bold text-white mb-2">Jacó SaaS</h1>
+        <h1 className="text-4xl font-bold text-white mb-2">Ola Saas</h1>
         <p className="text-muted-foreground mb-8">
           Plataforma modular para tour operadores y escuelas de surf en Costa Rica
         </p>

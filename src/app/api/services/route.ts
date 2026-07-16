@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getApiUser } from "@/lib/api-auth";
+import { serviceSchema } from "@/lib/validations";
 
 export async function GET() {
   const apiUser = await getApiUser();
@@ -18,17 +19,20 @@ export async function POST(request: Request) {
   if (!apiUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await request.json();
-  if (!body.name) {
-    return NextResponse.json({ error: "Name is required" }, { status: 400 });
+  const parsed = serviceSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.flatten().fieldErrors }, { status: 400 });
   }
+
+  const { name, description, price, duration } = parsed.data;
 
   const service = await prisma.service.create({
     data: {
       tenantId: apiUser.tenantId,
-      name: body.name,
-      description: body.description || null,
-      price: body.price ? parseFloat(body.price) : null,
-      duration: body.duration ? parseInt(body.duration) : null,
+      name,
+      description: description || null,
+      price: price ?? null,
+      duration: duration ?? null,
     },
   });
 

@@ -7,13 +7,45 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Plan {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  price       Int      @default(0) // in cents (0 = free)
+  interval    String   @default("monthly") // monthly, yearly
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  modules PlanModule[]
+}
+
+model PlanModule {
+  id       String @id @default(cuid())
+  planId   String
+  moduleId String
+  plan   Plan   @relation(fields: [planId], references: [id], onDelete: Cascade)
+  module Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  @@unique([planId, moduleId])
+}
+
+model PlatformConfig {
+  id    String @id @default(cuid())
+  key   String @unique
+  value Json   @default("{}")
+  updatedAt DateTime @updatedAt
+}
+
 model Tenant {
   id        String   @id @default(cuid())
   name      String
   slug      String   @unique
   email     String
   phone     String?
-  plan      String   @default("basic")
+  plan      String   @default("free")
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -21,9 +53,20 @@ model Tenant {
   users        User[]
   modules      TenantModule[]
   settings     TenantSetting?
-  bookings     Booking[]
-  staffMembers Staff[]
-  services     Service[]
+  bookings        Booking[]
+  staffMembers    Staff[]
+  services        Service[]
+  invoiceSequences InvoiceSequence[]
+  invoices         Invoice[]
+  members          Member[]
+  memberPayments   MemberPayment[]
+  memberAttendance Attendance[]
+  products         Product[]
+  sales            Sale[]
+  scheduleSlots    ScheduleSlot[]
+  scheduleBookings ScheduleBooking[]
+  supportTickets   SupportTicket[]
+  platformEvents   PlatformEvent[]
 }
 
 model Module {
@@ -33,7 +76,8 @@ model Module {
   description String?
   price       Float   @default(0)
 
-  tenants TenantModule[]
+  tenants     TenantModule[]
+  planModules PlanModule[]
 }
 
 model TenantModule {
@@ -75,7 +119,246 @@ model TenantSetting {
   maxPaxPerBooking   Int      @default(10)
   advanceNoticeHours Int      @default(2)
 
+  // Factura Electrónica (Hacienda CR)
+  legalId         String?
+  legalName       String?
+  taxPhone        String?
+  taxEmail        String?
+  district        String?
+  canton          String?
+  province        String?
+  zipCode         String?
+  barrio          String?
+  invoiceActivity String?
+  digitalCert     String?
+  certPassword    String?
+
+  // SINPE Móvil
+  sinpePhone String?
+  sinpeName  String?
+
+  // Theming
+  themePreset String @default("default") // default, ocean, forest, sunset, midnight
+
   updatedAt DateTime @updatedAt
+}
+
+model ScheduleSlot {
+  id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  dayOfWeek Int    // 0=Sunday, 1=Monday, ..., 6=Saturday
+  startTime String // "06:00"
+  endTime   String // "07:00"
+  capacity  Int    @default(10)
+  active    Boolean @default(true)
+
+  bookings ScheduleBooking[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId, dayOfWeek])
+}
+
+model ScheduleBooking {
+  id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  slotId String
+  slot   ScheduleSlot @relation(fields: [slotId], references: [id], onDelete: Cascade)
+
+  memberName   String
+  memberPhone  String?
+  memberEmail  String?
+  date         DateTime // specific date this booking is for
+  status       String   @default("confirmed") // confirmed, cancelled
+  notes        String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId, slotId, date])
+}
+
+model Member {
+  id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  name       String
+  phone      String?
+  email      String?
+  membership String   @default("mensual") // mensual, trimestral, semestral, anual
+  startDate  DateTime @default(now())
+  endDate    DateTime?
+  status         String    @default("active") // active, expired, cancelled
+  notes          String?
+  lastNotifiedAt DateTime?
+  pin            String? // hashed 4-digit PIN for portal login
+  authToken      String? // session token for portal
+
+  payments   MemberPayment[]
+  attendance Attendance[]
+  sales      Sale[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model MemberPayment {
+  id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  memberId String
+  member   Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  amount     Float
+  method     String   @default("efectivo") // efectivo, sinpe, transferencia
+  periodFrom DateTime?
+  periodTo   DateTime?
+  notes      String?
+  sinpeRef   String? // referencia SINPE si aplica
+  receiptUrl String? // foto del comprobante de pago
+
+  createdAt DateTime @default(now())
+}
+
+model Attendance {
+  id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  memberId String
+  member   Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  dateIn  DateTime @default(now())
+  dateOut DateTime?
+}
+
+model Product {
+  id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  name        String
+  description String?
+  barcode     String?
+  price       Float
+  cost        Float?
+  stock       Int      @default(0)
+  category    String   @default("general") // bebidas, suplementos, ropa, etc
+  active      Boolean  @default(true)
+
+  sales    SaleItem[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Sale {
+  id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  memberId String?
+  member   Member?  @relation(fields: [memberId], references: [id])
+  items    SaleItem[]
+
+  subtotal Float  @default(0)
+  tax      Float  @default(0)
+  total    Float  @default(0)
+  method   String @default("efectivo") // efectivo, sinpe, transferencia
+  status   String @default("completed")
+
+  createdAt DateTime @default(now())
+}
+
+model SaleItem {
+  id        String  @id @default(cuid())
+  saleId    String
+  sale      Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  productName String
+  quantity    Int     @default(1)
+  unitPrice   Float
+  total       Float
+}
+
+model InvoiceSequence {
+  id       String @id @default(cuid())
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  type          String // FE, TE, ND, NC, etc
+  branchCode    String @default("001") // sucursal
+  terminalCode  String @default("001") // terminal
+  currentNumber Int    @default(0)
+  year          Int
+
+  @@unique([tenantId, type, year])
+}
+
+model Invoice {
+  id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  type         String @default("FE") // FE=Factura, TE=Tiquete, ND=Nota Débito, NC=Nota Crédito
+  consecutive  String @unique
+  clave        String @unique
+  status       String @default("draft") // draft, sent, accepted, rejected, partial
+
+  // Emisor (de la empresa)
+  issuerName   String
+  issuerId     String
+
+  // Receptor (cliente)
+  customerIdType String @default("02") // 01=física, 02=jurídica, 03=dim, etc
+  customerId     String
+  customerName   String
+  customerEmail  String?
+  customerPhone  String?
+
+  // Montos
+  subtotal   Float  @default(0)
+  tax        Float  @default(0) // IVA total
+  total      Float  @default(0)
+
+  // XML firmado y respuesta
+  xmlContent      String?
+  haciendaStatus  String? // null, accepted, rejected, partial
+  haciendaMsg     String?
+  haciendaRaw     Json?
+  printedAt       DateTime?
+
+  // Relación opcional con booking
+  bookingId String?  @unique
+  booking   Booking? @relation(fields: [bookingId], references: [id])
+
+  items     InvoiceItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model InvoiceItem {
+  id        String  @id @default(cuid())
+  invoiceId String
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  line        Int
+  description String
+  quantity    Float  @default(1)
+  unitPrice   Float
+  subtotal    Float
+  taxRate     Float  @default(13) // 13%, 8%, 4%, 2%, 0%, etc
+  tax         Float  @default(0)
+  total       Float
 }
 
 model Service {
@@ -115,6 +398,7 @@ model Booking {
   notes         String?
   staffId       String?
   staff         Staff?    @relation(fields: [staffId], references: [id])
+  invoice       Invoice?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -134,4 +418,44 @@ model Staff {
   bookings Booking[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model SupportTicket {
+  id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  subject  String
+  status   String   @default("open") // open, awaiting, closed
+  priority String   @default("normal") // low, normal, high, urgent
+
+  messages SupportMessage[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SupportMessage {
+  id        String   @id @default(cuid())
+  ticketId  String
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  content    String
+  authorType String // tenant, admin
+  authorId   String? // user id if admin
+  createdAt DateTime @default(now())
+}
+
+model PlatformEvent {
+  id          String   @id @default(cuid())
+  type        String
+  description String
+  tenantId    String?
+  tenant      Tenant?  @relation(fields: [tenantId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([type])
+  @@index([tenantId])
+  @@index([createdAt])
 }

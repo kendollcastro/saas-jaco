@@ -3,8 +3,10 @@ import { prisma } from "./prisma";
 export const AVAILABLE_MODULES = [
   { key: "bookings", name: "Reservas", description: "Booking de tours, clases y actividades", price: 30 },
   { key: "staff", name: "Staff", description: "Gestión de horarios e instructores", price: 20 },
+  { key: "memberships", name: "Socios y Membresías", description: "Gestión de clientes y membresías", price: 20 },
+  { key: "inventory", name: "Inventario", description: "Control de stock y POS", price: 25 },
+  { key: "invoicing", name: "Facturación Electrónica", description: "Facturas electrónicas Hacienda CR", price: 25 },
   { key: "menu", name: "Menú Digital", description: "Menú QR para restaurantes", price: 15 },
-  { key: "inventory", name: "Inventario", description: "Control de stock básico", price: 20 },
 ] as const;
 
 export async function getActiveModules(tenantId: string) {

@@ -25,7 +25,7 @@ export async function getApiUser() {
 
   const dbUser = await prisma.user.findUnique({
     where: { id: user.id },
-    select: { id: true, tenantId: true, role: true },
+    select: { id: true, email: true, tenantId: true, role: true },
   });
 
   return dbUser;

@@ -5,9 +5,10 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const isDashboard = pathname.startsWith("/dashboard");
-  const isApi = pathname.startsWith("/api/") && !pathname.startsWith("/api/auth");
+  const isAdmin = pathname.startsWith("/admin") && !pathname.startsWith("/admin/login");
+  const isApi = pathname.startsWith("/api/") && !pathname.startsWith("/api/auth") && !pathname.startsWith("/api/portal");
 
-  if (!isDashboard && !isApi) {
+  if (!isDashboard && !isApi && !isAdmin) {
     return NextResponse.next();
   }
 
@@ -42,6 +43,9 @@ export async function proxy(request: NextRequest) {
     if (isApi) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    if (isAdmin) {
+      return NextResponse.redirect(new URL("/admin/login", request.url));
+    }
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
@@ -49,5 +53,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/api/:path*"],
+  matcher: ["/dashboard/:path*", "/admin/:path*", "/api/:path*"],
 };
