@@ -1,8 +1,39 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+const ALLOWED_ORIGINS = [
+  process.env.NEXT_PUBLIC_SITE_URL,
+  ...(process.env.NODE_ENV === "development"
+    ? ["http://localhost:3000", "http://localhost:3001"]
+    : []),
+].filter(Boolean);
+
+function validateOrigin(request: NextRequest): boolean {
+  if (process.env.NODE_ENV === "development") return true;
+
+  const origin = request.headers.get("origin");
+  const referer = request.headers.get("referer");
+
+  if (origin) {
+    return ALLOWED_ORIGINS.some(
+      (a) => a && (origin === a || origin.startsWith(a + "/") || origin.startsWith(a + ":"))
+    );
+  }
+  if (referer) {
+    return ALLOWED_ORIGINS.some((a) => a && referer.startsWith(a));
+  }
+  return true;
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // CSRF check for mutating API requests
+  if (pathname.startsWith("/api/") && ["POST", "PATCH", "PUT", "DELETE"].includes(request.method)) {
+    if (!validateOrigin(request)) {
+      return NextResponse.json({ error: "CSRF validation failed" }, { status: 403 });
+    }
+  }
 
   const isDashboard = pathname.startsWith("/dashboard");
   const isAdmin = pathname.startsWith("/admin") && !pathname.startsWith("/admin/login");

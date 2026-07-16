@@ -1,10 +1,19 @@
 import { prisma } from "./prisma";
 import crypto from "crypto";
+import bcrypt from "bcryptjs";
 
 const PIN_SALT = process.env.PIN_SALT || "ola-portal-v1";
+const BCRYPT_ROUNDS = 10;
 
 export function hashPin(pin: string): string {
-  return crypto.createHash("sha256").update(pin + PIN_SALT).digest("hex");
+  return bcrypt.hashSync(pin, BCRYPT_ROUNDS);
+}
+
+export function verifyPin(pin: string, hash: string): boolean {
+  if (bcrypt.compareSync(pin, hash)) return true;
+  // Fallback: legacy SHA-256 hashes (migration path)
+  const legacy = crypto.createHash("sha256").update(pin + PIN_SALT).digest("hex");
+  return legacy === hash;
 }
 
 export function generateToken(): string {

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { hashPin, generateToken, getPortalTenant } from "@/lib/portal-auth";
+import { hashPin, verifyPin, generateToken, getPortalTenant } from "@/lib/portal-auth";
 import { normalizePhone } from "@/lib/phone";
 import { rateLimit } from "@/lib/rate-limit";
 
@@ -32,8 +32,14 @@ export async function POST(request: Request) {
     }
 
     const member = await prisma.member.findFirst({ where });
-    if (!member || member.pin !== hashPin(pin)) {
+    if (!member || !member.pin || !verifyPin(pin, member.pin)) {
       return NextResponse.json({ error: "Teléfono o PIN incorrecto" }, { status: 401 });
+    }
+
+    // Auto-upgrade legacy SHA-256 hash to bcrypt
+    const isLegacy = !member.pin.startsWith("$2a$") && !member.pin.startsWith("$2b$");
+    if (isLegacy) {
+      await prisma.member.update({ where: { id: member.id }, data: { pin: hashPin(pin) } });
     }
 
     const token = generateToken();
