@@ -8,6 +8,7 @@ import { Toaster } from "sonner";
 import { ThemeProvider, useTheme } from "next-themes";
 import { motion } from "framer-motion";
 import ThemeApplier from "@/components/theme-applier";
+import OnboardingWizard from "@/components/onboarding-wizard";
 import {
   LayoutDashboard,
   Calendar,
@@ -77,6 +78,7 @@ export default function DashboardLayout({
   const [activeModules, setActiveModules] = useState<string[]>([]);
   const [bookingNavLabel, setBookingNavLabel] = useState("");
   const [maintenance, setMaintenance] = useState<{ enabled: boolean; message: string } | null>(null);
+  const [onboarding, setOnboarding] = useState<{ needsOnboarding: boolean; progress: any } | null>(null);
 
   function loadSidebarInfo() {
     fetch("/api/notifications/count")
@@ -100,6 +102,7 @@ export default function DashboardLayout({
   useEffect(() => {
     loadSidebarInfo();
     fetch("/api/maintenance").then((r) => r.json()).then((d) => setMaintenance(d)).catch(() => {});
+    fetch("/api/onboarding").then((r) => r.json()).then((d) => setOnboarding(d)).catch(() => {});
     const handler = () => loadSidebarInfo();
     window.addEventListener("focus", handler);
     window.addEventListener("settings-saved", handler);
@@ -283,6 +286,12 @@ export default function DashboardLayout({
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
     <ThemeApplier />
+    {onboarding?.needsOnboarding && (
+      <OnboardingWizard
+        progress={onboarding.progress}
+        onComplete={() => setOnboarding(null)}
+      />
+    )}
     {maintenance?.enabled ? (
       <div className="flex h-screen bg-background items-center justify-center p-6">
         <div className="max-w-md text-center space-y-4">

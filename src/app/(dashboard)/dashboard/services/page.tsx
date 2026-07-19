@@ -125,7 +125,17 @@ export default function ServicesPage() {
           <div className="text-center py-16 text-muted-foreground">
             <Tent className="size-10 mb-3 text-muted-foreground mx-auto" />
             <p className="font-bold text-base">No hay servicios aún</p>
-            <p className="text-sm mt-1">Agrega los servicios que ofreces (clases de surf, tours, etc.)</p>
+            <p className="text-sm mt-1 mb-4">Agregá los servicios que ofrecés (clases, tours, consultas, etc.)</p>
+            <button
+              onClick={() => setShowForm(true)}
+              className="inline-flex items-center gap-2 bg-primary text-primary-foreground border-none rounded-[10px] px-[17px] py-[11px] text-[14px] font-bold cursor-pointer shadow-lg shadow-primary/20 hover:bg-primary/90 transition"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              Crear servicio
+            </button>
           </div>
         ) : (
           <div className="overflow-x-auto">

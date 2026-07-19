@@ -214,6 +214,7 @@ export default function MembersPage() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-[21px] font-extrabold tracking-tight text-foreground">Socios</h1>
         <button
+          id="create-member-btn"
           onClick={() => setShowForm(true)}
           className="inline-flex items-center gap-2 bg-primary text-primary-foreground border-none rounded-[10px] px-[17px] py-[11px] text-[14px] font-bold cursor-pointer shadow-lg shadow-primary/20 hover:bg-primary/90 transition"
         >
@@ -282,7 +283,19 @@ export default function MembersPage() {
           <div className="text-center py-16 text-muted-foreground">
             <Dumbbell className="size-10 mb-3 text-muted-foreground mx-auto" />
             <p className="font-bold text-base">{search || statusTab !== "all" ? "Sin resultados" : "No hay socios aún"}</p>
-            <p className="text-sm mt-1">Registra el primer socio</p>
+            <p className="text-sm mt-1 mb-4">Registrá el primer socio para empezar a gestionar membresías</p>
+            {!search && statusTab === "all" && (
+              <button
+                onClick={() => { const btn = document.getElementById("create-member-btn"); if (btn) btn.click(); }}
+                className="inline-flex items-center gap-2 bg-primary text-primary-foreground border-none rounded-[10px] px-[17px] py-[11px] text-[14px] font-bold cursor-pointer shadow-lg shadow-primary/20 hover:bg-primary/90 transition"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                Registrar socio
+              </button>
+            )}
           </div>
         ) : (
           <>

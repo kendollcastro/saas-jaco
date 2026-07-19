@@ -147,6 +147,9 @@ model TenantSetting {
   businessType String? // tourism, gym, clinic, retail, restaurant, other
   category     String? // optional sub-category
 
+  // Onboarding
+  onboardingDone Boolean @default(false)
+
   updatedAt DateTime @updatedAt
 }
 

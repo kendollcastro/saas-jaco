@@ -110,6 +110,7 @@ export default function StaffPage() {
           Staff
         </h1>
         <button
+          id="create-staff-btn"
           onClick={() => setShowForm(true)}
           className="inline-flex items-center gap-2 bg-primary text-primary-foreground border-none rounded-[10px] px-[17px] py-[11px] text-[14px] font-bold cursor-pointer shadow-lg shadow-primary/20 hover:bg-primary/90 transition"
         >
@@ -132,7 +133,17 @@ export default function StaffPage() {
           <div className="text-center py-16 text-muted-foreground">
             <Users className="size-10 mb-3 text-muted-foreground mx-auto" />
             <p className="font-bold text-base">No hay personal registrado</p>
-            <p className="text-sm mt-1">Agrega instructores, guías y staff</p>
+            <p className="text-sm mt-1 mb-4">Agregá instructores, guías y staff</p>
+            <button
+              onClick={() => { const btn = document.getElementById("create-staff-btn"); if (btn) btn.click(); }}
+              className="inline-flex items-center gap-2 bg-primary text-primary-foreground border-none rounded-[10px] px-[17px] py-[11px] text-[14px] font-bold cursor-pointer shadow-lg shadow-primary/20 hover:bg-primary/90 transition"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              Agregar personal
+            </button>
           </div>
         ) : (
           <div className="overflow-x-auto">
