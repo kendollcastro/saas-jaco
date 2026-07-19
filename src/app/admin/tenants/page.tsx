@@ -16,6 +16,7 @@ export default function AdminTenantsPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [createName, setCreateName] = useState("");
   const [createEmail, setCreateEmail] = useState("");
+  const [createPassword, setCreatePassword] = useState("");
   const [creating, setCreating] = useState(false);
 
   useEffect(() => {
@@ -91,21 +92,32 @@ export default function AdminTenantsPage() {
                 className="w-full px-[13px] py-[11px] border border-input rounded-[10px] text-[14px] text-foreground bg-background placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-primary/20 transition"
               />
             </div>
+            <div>
+              <label className="block text-[12.5px] font-bold text-muted-foreground mb-[7px]">Contraseña</label>
+              <input
+                type="password"
+                value={createPassword}
+                onChange={(e) => setCreatePassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full px-[13px] py-[11px] border border-input rounded-[10px] text-[14px] text-foreground bg-background placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-primary/20 transition"
+              />
+            </div>
             <button
               onClick={async () => {
-                if (!createName || !createEmail) return toast.error("Completá todos los campos");
+                if (!createName || !createEmail || !createPassword) return toast.error("Completá todos los campos");
                 setCreating(true);
                 try {
                   const res = await fetch("/api/admin/tenants", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ name: createName, email: createEmail }),
+                    body: JSON.stringify({ name: createName, email: createEmail, password: createPassword }),
                   });
                   if (res.ok) {
-                    toast.success("Tenant creado");
+                    toast.success("Tenant creado. El cliente ya puede iniciar sesión.");
                     setShowCreate(false);
                     setCreateName("");
                     setCreateEmail("");
+                    setCreatePassword("");
                     setLoading(true);
                     fetch("/api/admin/tenants").then(r => r.json()).then(setTenants).catch(() => toast.error("Error al recargar")).finally(() => setLoading(false));
                   } else {
