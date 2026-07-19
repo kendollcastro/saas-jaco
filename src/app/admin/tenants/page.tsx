@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Building2, Search, ArrowRight, Users, Calendar, Dumbbell, AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import { Building2, Search, ArrowRight, Users, Calendar, Dumbbell, AlertCircle, ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
 
 const PAGE_SIZE = 10;
 
@@ -13,6 +13,10 @@ export default function AdminTenantsPage() {
   const [error, setError] = useState(false);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
+  const [showCreate, setShowCreate] = useState(false);
+  const [createName, setCreateName] = useState("");
+  const [createEmail, setCreateEmail] = useState("");
+  const [creating, setCreating] = useState(false);
 
   useEffect(() => {
     fetch("/api/admin/tenants")
@@ -37,16 +41,91 @@ export default function AdminTenantsPage() {
     <div className="animate-[jacoFade_0.25s_ease]">
       <h1 className="text-[21px] font-extrabold tracking-tight text-foreground mb-6">Tenants</h1>
 
-      <div className="relative max-w-sm mb-5">
-        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-[16px] text-muted-foreground" />
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Buscar tenant..."
-          className="w-full pl-9 pr-4 py-2.5 border border-input rounded-[10px] text-[14px] text-foreground bg-background placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-primary/20 transition"
-        />
+      <div className="flex items-center gap-3 mb-5">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-[16px] text-muted-foreground" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar tenant..."
+            className="w-full pl-9 pr-4 py-2.5 border border-input rounded-[10px] text-[14px] text-foreground bg-background placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-primary/20 transition"
+          />
+        </div>
+        <button
+          onClick={() => setShowCreate(true)}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-[10px] bg-primary text-primary-foreground text-[13px] font-bold hover:bg-primary/90 transition shadow-sm"
+        >
+          <Plus className="size-[15px]" />
+          Nuevo
+        </button>
       </div>
+
+      {/* Create modal */}
+      {showCreate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[rgba(15,23,42,.5)] animate-[jacoFade_0.15s_ease]" onClick={() => setShowCreate(false)}>
+          <div className="bg-card rounded-2xl shadow-xl border border-border w-full max-w-md p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h2 className="text-[16px] font-extrabold text-foreground">Crear tenant</h2>
+              <button onClick={() => setShowCreate(false)} className="text-muted-foreground hover:text-foreground transition">
+                <X className="size-[18px]" />
+              </button>
+            </div>
+            <div>
+              <label className="block text-[12.5px] font-bold text-muted-foreground mb-[7px]">Nombre del negocio</label>
+              <input
+                type="text"
+                value={createName}
+                onChange={(e) => setCreateName(e.target.value)}
+                placeholder="Ej: Gimnasio Fit Jacó"
+                className="w-full px-[13px] py-[11px] border border-input rounded-[10px] text-[14px] text-foreground bg-background placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-primary/20 transition"
+              />
+            </div>
+            <div>
+              <label className="block text-[12.5px] font-bold text-muted-foreground mb-[7px]">Email del administrador</label>
+              <input
+                type="email"
+                value={createEmail}
+                onChange={(e) => setCreateEmail(e.target.value)}
+                placeholder="admin@ejemplo.com"
+                className="w-full px-[13px] py-[11px] border border-input rounded-[10px] text-[14px] text-foreground bg-background placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-primary/20 transition"
+              />
+            </div>
+            <button
+              onClick={async () => {
+                if (!createName || !createEmail) return toast.error("Completá todos los campos");
+                setCreating(true);
+                try {
+                  const res = await fetch("/api/admin/tenants", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name: createName, email: createEmail }),
+                  });
+                  if (res.ok) {
+                    toast.success("Tenant creado");
+                    setShowCreate(false);
+                    setCreateName("");
+                    setCreateEmail("");
+                    setLoading(true);
+                    fetch("/api/admin/tenants").then(r => r.json()).then(setTenants).catch(() => toast.error("Error al recargar")).finally(() => setLoading(false));
+                  } else {
+                    const err = await res.json();
+                    toast.error(err.error || "Error al crear");
+                  }
+                } catch {
+                  toast.error("Error al crear tenant");
+                } finally {
+                  setCreating(false);
+                }
+              }}
+              disabled={creating}
+              className="w-full py-[11px] rounded-[10px] bg-primary text-primary-foreground text-[14px] font-bold hover:bg-primary/90 transition disabled:opacity-50"
+            >
+              {creating ? "Creando..." : "Crear tenant"}
+            </button>
+          </div>
+        </div>
+      )}
 
       {loading ? (
         <div className="space-y-3">

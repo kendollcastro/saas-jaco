@@ -33,3 +33,57 @@ export async function GET() {
     }))
   );
 }
+
+export async function POST(request: Request) {
+  const admin = await requireSuperAdmin();
+  if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  try {
+    const body = await request.json();
+    const { name, email } = body;
+
+    if (!name || !email) {
+      return NextResponse.json({ error: "Nombre y email requeridos" }, { status: 400 });
+    }
+
+    // Check if tenant with this email already exists
+    const existing = await prisma.tenant.findFirst({ where: { email } });
+    if (existing) {
+      return NextResponse.json({ error: "Ya existe un tenant con este email" }, { status: 409 });
+    }
+
+    const slug = email.split("@")[0].replace(/[^a-z0-9]/gi, "-").toLowerCase();
+
+    const tenant = await prisma.tenant.create({
+      data: {
+        name,
+        slug,
+        email,
+        settings: {
+          create: {
+            businessName: name,
+            businessEmail: email,
+          },
+        },
+      },
+    });
+
+    // Activate default modules (bookings + staff)
+    const modules = await prisma.module.findMany({
+      where: { key: { in: ["bookings", "staff"] } },
+    });
+    if (modules.length > 0) {
+      await prisma.tenantModule.createMany({
+        data: modules.map((m) => ({
+          tenantId: tenant.id,
+          moduleId: m.id,
+          active: true,
+        })),
+      });
+    }
+
+    return NextResponse.json({ success: true, tenant }, { status: 201 });
+  } catch (e: any) {
+    return NextResponse.json({ error: "Error al crear tenant" }, { status: 500 });
+  }
+}
