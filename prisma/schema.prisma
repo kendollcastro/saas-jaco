@@ -140,6 +140,9 @@ model TenantSetting {
   // Theming
   themePreset String @default("default") // default, ocean, forest, sunset, midnight
 
+  // Nav customization
+  bookingNavLabel String? // custom label for "Reservas" nav item (e.g. "Horario", "Citas")
+
   updatedAt DateTime @updatedAt
 }
 

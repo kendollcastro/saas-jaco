@@ -59,6 +59,7 @@ export async function GET() {
     colorPrimary: settings?.colorPrimary || "#1e40af",
     logoUrl: settings?.logoUrl || "",
     themePreset: settings?.themePreset || "default",
+    bookingNavLabel: settings?.bookingNavLabel || null,
     modules: modules.map((m) => ({
       key: m.module.key,
       name: m.module.name,
@@ -94,6 +95,7 @@ export async function PUT(request: Request) {
       colorPrimary: body.colorPrimary || "#1e40af",
       logoUrl: body.logoUrl || null,
       themePreset: body.themePreset || "default",
+      bookingNavLabel: body.bookingNavLabel || null,
     };
 
     await prisma.tenantSetting.upsert({

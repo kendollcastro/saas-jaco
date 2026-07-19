@@ -29,6 +29,7 @@ import {
   Clock,
   Wrench,
   MessageSquare,
+  BarChart3,
 } from "lucide-react";
 
 const allNavItems = [
@@ -43,6 +44,7 @@ const allNavItems = [
   { label: "Caja", href: "/dashboard/pos", icon: ShoppingCart, module: "inventory" },
   { label: "Facturación", href: "/dashboard/invoices", icon: Receipt, module: "invoicing" },
   { label: "Soporte", href: "/dashboard/support", icon: MessageSquare, module: null },
+  { label: "Reportes", href: "/dashboard/reports", icon: BarChart3, module: null },
   { label: "Configuración", href: "/dashboard/settings", icon: Settings, module: null },
 ];
 
@@ -73,6 +75,7 @@ export default function DashboardLayout({
   const [businessName, setBusinessName] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
   const [activeModules, setActiveModules] = useState<string[]>([]);
+  const [bookingNavLabel, setBookingNavLabel] = useState("");
   const [maintenance, setMaintenance] = useState<{ enabled: boolean; message: string } | null>(null);
 
   function loadSidebarInfo() {
@@ -85,6 +88,7 @@ export default function DashboardLayout({
       .then((d) => {
         setBusinessName(d.businessName || "");
         setLogoUrl(d.logoUrl || "");
+        setBookingNavLabel(d.bookingNavLabel || "");
         if (d.modules) {
           setActiveModules(d.modules.filter((m: any) => m.active).map((m: any) => m.key));
         }
@@ -156,9 +160,13 @@ export default function DashboardLayout({
     router.refresh();
   }
 
-  const navItems = useMemo(() => allNavItems.filter(
-    (i) => !i.module || activeModules.includes(i.module)
-  ), [activeModules]);
+  const navItems = useMemo(() => allNavItems
+    .filter((i) => !i.module || activeModules.includes(i.module))
+    .map((i) => ({
+      ...i,
+      label: i.label === "Reservas" && bookingNavLabel ? bookingNavLabel : i.label,
+    })),
+  [activeModules, bookingNavLabel]);
 
   // Page title from path
   const currentPage = navItems.find((i) => pathname.startsWith(i.href))?.label ?? "Dashboard";
@@ -352,6 +360,8 @@ export default function DashboardLayout({
                   ? "Gestión de horarios semanales"
                   : pathname.startsWith("/dashboard/support")
                   ? "Soporte y ayuda"
+                  : pathname.startsWith("/dashboard/reports")
+                  ? "Reportes y estadísticas"
                   : ""}
               </p>
             </div>

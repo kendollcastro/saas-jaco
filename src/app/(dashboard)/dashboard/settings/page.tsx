@@ -36,6 +36,7 @@ export default function SettingsPage() {
     colorPrimary: "#1e40af",
     logoUrl: "",
     themePreset: "default",
+    bookingNavLabel: "",
   });
   const [modules, setModules] = useState<{ key: string; name: string; active: boolean }[]>([]);
   const [dragOver, setDragOver] = useState(false);
@@ -112,6 +113,7 @@ export default function SettingsPage() {
         colorPrimary: data.colorPrimary || "#1e40af",
         logoUrl: data.logoUrl || "",
         themePreset: data.themePreset || "default",
+        bookingNavLabel: data.bookingNavLabel || "",
         });
         setModules(data.modules || []);
       })
@@ -350,6 +352,8 @@ export default function SettingsPage() {
                   )}
                 </div>
               </div>
+
+              <Field label="Etiqueta del menú de reservas" value={form.bookingNavLabel} onChange={(v) => set("bookingNavLabel", v)} placeholder="Ej: Horario, Citas, Clases" />
             </div>
           </section>
 
