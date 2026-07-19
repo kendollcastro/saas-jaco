@@ -3,9 +3,18 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Building2, Search, ArrowRight, Users, Calendar, Dumbbell, AlertCircle, ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
+import { Building2, Search, ArrowRight, Users, Calendar, Dumbbell, AlertCircle, ChevronLeft, ChevronRight, Plus, X, Store, Tag } from "lucide-react";
 
 const PAGE_SIZE = 10;
+
+const BUSINESS_TYPES = [
+  { value: "tourism", label: "Turismo" },
+  { value: "gym", label: "Gimnasio" },
+  { value: "clinic", label: "Clínica" },
+  { value: "retail", label: "Tienda" },
+  { value: "restaurant", label: "Restaurante" },
+  { value: "other", label: "Otro" },
+];
 
 export default function AdminTenantsPage() {
   const [tenants, setTenants] = useState<any[]>([]);
@@ -17,16 +26,21 @@ export default function AdminTenantsPage() {
   const [createName, setCreateName] = useState("");
   const [createEmail, setCreateEmail] = useState("");
   const [createPassword, setCreatePassword] = useState("");
+  const [createBusinessType, setCreateBusinessType] = useState("tourism");
+  const [createCategory, setCreateCategory] = useState("");
+  const [availableModules, setAvailableModules] = useState<{ key: string; name: string; selected: boolean }[]>([]);
   const [creating, setCreating] = useState(false);
 
   useEffect(() => {
-    fetch("/api/admin/tenants")
-      .then((r) => {
-        if (!r.ok) throw new Error("Error");
-        return r.json();
+    Promise.all([
+      fetch("/api/admin/tenants").then((r) => { if (!r.ok) throw new Error("Error"); return r.json(); }),
+      fetch("/api/admin/modules").then((r) => { if (!r.ok) throw new Error("Error"); return r.json(); }),
+    ])
+      .then(([t, mods]) => {
+        setTenants(t);
+        setAvailableModules(mods.map((m: any) => ({ key: m.key, name: m.name, selected: m.key === "bookings" || m.key === "staff" })));
       })
-      .then(setTenants)
-      .catch(() => { setError(true); toast.error("Error al cargar tenants"); })
+      .catch(() => { setError(true); toast.error("Error al cargar datos"); })
       .finally(() => setLoading(false));
   }, []);
 
@@ -102,6 +116,48 @@ export default function AdminTenantsPage() {
                 className="w-full px-[13px] py-[11px] border border-input rounded-[10px] text-[14px] text-foreground bg-background placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-primary/20 transition"
               />
             </div>
+            <div>
+              <label className="block text-[12.5px] font-bold text-muted-foreground mb-[7px] flex items-center gap-1.5">
+                <Store className="size-[14px]" /> Tipo de negocio
+              </label>
+              <select
+                value={createBusinessType}
+                onChange={(e) => setCreateBusinessType(e.target.value)}
+                className="w-full px-[13px] py-[11px] border border-input rounded-[10px] text-[14px] text-foreground bg-background focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-primary/20 transition"
+              >
+                {BUSINESS_TYPES.map((t) => (
+                  <option key={t.value} value={t.value}>{t.label}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-[12.5px] font-bold text-muted-foreground mb-[7px] flex items-center gap-1.5">
+                <Tag className="size-[14px]" /> Categoría (opcional)
+              </label>
+              <input
+                type="text"
+                value={createCategory}
+                onChange={(e) => setCreateCategory(e.target.value)}
+                placeholder="Ej: CrossFit, Yoga, Surf"
+                className="w-full px-[13px] py-[11px] border border-input rounded-[10px] text-[14px] text-foreground bg-background placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-primary/20 transition"
+              />
+            </div>
+            <div>
+              <label className="block text-[12.5px] font-bold text-muted-foreground mb-[7px]">Módulos activos</label>
+              <div className="space-y-1 max-h-[160px] overflow-y-auto">
+                {availableModules.map((mod) => (
+                  <label key={mod.key} className="flex items-center gap-3 py-1.5 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={mod.selected}
+                      onChange={() => setAvailableModules((prev) => prev.map((m) => m.key === mod.key ? { ...m, selected: !m.selected } : m))}
+                      className="accent-primary"
+                    />
+                    <span className="text-[13px] font-semibold text-foreground/80 group-hover:text-foreground transition">{mod.name}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
             <button
               onClick={async () => {
                 if (!createName || !createEmail || !createPassword) return toast.error("Completá todos los campos");
@@ -110,7 +166,14 @@ export default function AdminTenantsPage() {
                   const res = await fetch("/api/admin/tenants", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ name: createName, email: createEmail, password: createPassword }),
+                    body: JSON.stringify({
+                      name: createName,
+                      email: createEmail,
+                      password: createPassword,
+                      businessType: createBusinessType,
+                      category: createCategory || null,
+                      modules: availableModules.filter((m) => m.selected).map((m) => m.key),
+                    }),
                   });
                   if (res.ok) {
                     toast.success("Tenant creado. El cliente ya puede iniciar sesión.");
@@ -118,6 +181,9 @@ export default function AdminTenantsPage() {
                     setCreateName("");
                     setCreateEmail("");
                     setCreatePassword("");
+                    setCreateBusinessType("tourism");
+                    setCreateCategory("");
+                    setAvailableModules((prev) => prev.map((m) => ({ ...m, selected: m.key === "bookings" || m.key === "staff" })));
                     setLoading(true);
                     fetch("/api/admin/tenants").then(r => r.json()).then(setTenants).catch(() => toast.error("Error al recargar")).finally(() => setLoading(false));
                   } else {

@@ -12,6 +12,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   const tenant = await prisma.tenant.findUnique({
     where: { id },
     include: {
+      settings: true,
       _count: { select: { users: true, bookings: true, members: true, services: true, products: true, sales: true, invoices: true } },
       modules: { include: { module: true } },
     },
@@ -19,10 +20,12 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 
   if (!tenant) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
+  const { settings, modules, _count, ...rest } = tenant;
   return NextResponse.json({
-    ...tenant,
-    modules: tenant.modules.map((tm) => ({ key: tm.module.key, name: tm.module.name, active: tm.active })),
-    stats: tenant._count,
+    ...rest,
+    settings: settings ? { businessType: settings.businessType, category: settings.category } : null,
+    modules: modules.map((tm) => ({ key: tm.module.key, name: tm.module.name, active: tm.active })),
+    stats: _count,
   });
 }
 
@@ -57,54 +60,24 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     }
   }
 
-  if (body.plan) {
-    const tenant = await prisma.tenant.findUnique({ where: { id }, select: { name: true, plan: true } });
-    if (tenant && tenant.plan !== body.plan) {
-      await logEvent(
-        "tenant.plan_changed",
-        `Plan de "${tenant.name}" cambiado de "${tenant.plan}" a "${body.plan}"`,
-        id
-      );
-    }
-    await prisma.tenant.update({ where: { id }, data: { plan: body.plan } });
+  return NextResponse.json({ success: true });
+}
 
-    // Auto-sync modules from plan
-    const plan = await prisma.plan.findUnique({
-      where: { slug: body.plan },
-      include: { modules: true },
-    });
-    if (plan) {
-      const planModuleIds = plan.modules.map((pm) => pm.moduleId);
-      const allTenantModules = await prisma.tenantModule.findMany({
-        where: { tenantId: id },
-      });
-      // Deactivate modules not in plan
-      for (const tm of allTenantModules) {
-        if (!planModuleIds.includes(tm.moduleId)) {
-          await prisma.tenantModule.update({
-            where: { id: tm.id },
-            data: { active: false },
-          });
-        }
-      }
-      // Activate modules in plan
-      for (const moduleId of planModuleIds) {
-        const existing = allTenantModules.find((tm) => tm.moduleId === moduleId);
-        if (existing) {
-          if (!existing.active) {
-            await prisma.tenantModule.update({
-              where: { id: existing.id },
-              data: { active: true },
-            });
-          }
-        } else {
-          await prisma.tenantModule.create({
-            data: { tenantId: id, moduleId, active: true },
-          });
-        }
-      }
-    }
-  }
+export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const admin = await requireSuperAdmin();
+  if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { id } = await params;
+
+  const tenant = await prisma.tenant.findUnique({ where: { id }, select: { id: true, name: true } });
+  if (!tenant) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  await prisma.tenant.delete({ where: { id } });
+
+  await logEvent(
+    "tenant.deleted",
+    `Tenant "${tenant.name}" eliminado por super admin`,
+  );
 
   return NextResponse.json({ success: true });
 }

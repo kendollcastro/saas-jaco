@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { Toaster } from "sonner";
-import { Shield, Building2, LogOut, LayoutDashboard, Menu, X, DollarSign, MessageSquare, ScrollText } from "lucide-react";
+import { Shield, Building2, LogOut, LayoutDashboard, Menu, X, MessageSquare, ScrollText } from "lucide-react";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -61,7 +61,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <nav className="flex flex-col px-3 gap-0.5">
         <SidebarLink href="/admin" icon={LayoutDashboard} label="Dashboard" pathname={pathname} />
         <SidebarLink href="/admin/tenants" icon={Building2} label="Tenants" pathname={pathname} />
-        <SidebarLink href="/admin/plans" icon={DollarSign} label="Planes" pathname={pathname} />
         <SidebarLink href="/admin/support" icon={MessageSquare} label="Soporte" pathname={pathname} />
         <SidebarLink href="/admin/audit" icon={ScrollText} label="Auditoría" pathname={pathname} />
       </nav>
@@ -155,7 +154,6 @@ function getPageTitle(pathname: string) {
     if (pathname === "/admin/tenants") return "Tenants";
     return "Detalle del Tenant";
   }
-  if (pathname === "/admin/plans") return "Planes";
   if (pathname.startsWith("/admin/support")) return "Soporte";
   if (pathname.startsWith("/admin/audit")) return "Auditoría";
   return "Admin";

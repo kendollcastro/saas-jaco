@@ -3,48 +3,25 @@
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ArrowLeft, Building2, Users, Calendar, ShoppingCart, Package, Dumbbell, FileText, Activity, AlertCircle, Check } from "lucide-react";
+import { ArrowLeft, Building2, Users, Calendar, ShoppingCart, Package, Dumbbell, FileText, Activity, AlertCircle, Trash2 } from "lucide-react";
 import ConfirmModal from "@/components/confirm-modal";
 
 export default function TenantDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
   const [tenant, setTenant] = useState<any>(null);
-  const [plans, setPlans] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const [confirmAction, setConfirmAction] = useState<"suspend" | "activate" | null>(null);
+  const [confirmAction, setConfirmAction] = useState<"suspend" | "activate" | "delete" | null>(null);
   const [modifying, setModifying] = useState(false);
-  const [changingPlan, setChangingPlan] = useState(false);
 
   useEffect(() => {
-    Promise.all([
-      fetch(`/api/admin/tenants/${id}`).then((r) => { if (!r.ok) throw new Error("Error"); return r.json(); }),
-      fetch("/api/admin/plans").then((r) => { if (!r.ok) throw new Error("Error"); return r.json(); }),
-    ])
-      .then(([t, p]) => { setTenant(t); setPlans(p); })
+    fetch(`/api/admin/tenants/${id}`)
+      .then((r) => { if (!r.ok) throw new Error("Error"); return r.json(); })
+      .then(setTenant)
       .catch(() => { setError(true); toast.error("Error al cargar datos"); })
       .finally(() => setLoading(false));
   }, [id]);
-
-  async function changePlan(slug: string) {
-    if (slug === tenant.plan || changingPlan) return;
-    setChangingPlan(true);
-    try {
-      const res = await fetch(`/api/admin/tenants/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan: slug }),
-      });
-      if (res.ok) {
-        setTenant((prev: any) => ({ ...prev, plan: slug }));
-        toast.success("Plan actualizado — módulos sincronizados");
-      } else {
-        toast.error("Error al cambiar plan");
-      }
-    } catch { toast.error("Error de red"); }
-    finally { setChangingPlan(false); }
-  }
 
   async function toggleActive() {
     if (!tenant || modifying) return;
@@ -60,6 +37,25 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
         toast.success(tenant.active ? "Tenant suspendido" : "Tenant activado");
       } else {
         toast.error("Error al actualizar");
+      }
+    } catch {
+      toast.error("Error de red");
+    } finally {
+      setModifying(false);
+      setConfirmAction(null);
+    }
+  }
+
+  async function deleteTenant() {
+    if (!tenant || modifying) return;
+    setModifying(true);
+    try {
+      const res = await fetch(`/api/admin/tenants/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        toast.success("Tenant eliminado");
+        router.push("/admin/tenants");
+      } else {
+        toast.error("Error al eliminar");
       }
     } catch {
       toast.error("Error de red");
@@ -147,53 +143,60 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
           <h1 className="text-[21px] font-extrabold tracking-tight text-foreground">{tenant.name}</h1>
           {!tenant.active && <span className="text-[10px] font-bold text-red-500 bg-red-500/10 px-2 py-0.5 rounded">Suspendido</span>}
         </div>
-        <button
-          onClick={() => setConfirmAction(tenant.active ? "suspend" : "activate")}
-          disabled={modifying}
-          className={`px-4 py-2 rounded-[10px] text-[12px] font-bold border transition disabled:opacity-50 ${
-            tenant.active
-              ? "text-red-500 border-red-200 hover:bg-red-50 dark:hover:bg-red-500/10"
-              : "text-emerald-500 border-emerald-200 hover:bg-emerald-50 dark:hover:bg-emerald-500/10"
-          }`}
-        >
-          {modifying ? "..." : tenant.active ? "Suspender" : "Activar"}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setConfirmAction("delete")}
+            disabled={modifying}
+            className="px-4 py-2 rounded-[10px] text-[12px] font-bold border border-red-200 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition disabled:opacity-50 flex items-center gap-1.5"
+          >
+            <Trash2 className="size-[14px]" />
+            Eliminar
+          </button>
+          <button
+            onClick={() => setConfirmAction(tenant.active ? "suspend" : "activate")}
+            disabled={modifying}
+            className={`px-4 py-2 rounded-[10px] text-[12px] font-bold border transition disabled:opacity-50 ${
+              tenant.active
+                ? "text-red-500 border-red-200 hover:bg-red-50 dark:hover:bg-red-500/10"
+                : "text-emerald-500 border-emerald-200 hover:bg-emerald-50 dark:hover:bg-emerald-500/10"
+            }`}
+          >
+            {modifying ? "..." : tenant.active ? "Suspender" : "Activar"}
+          </button>
+        </div>
       </div>
 
       <ConfirmModal
-        open={confirmAction !== null}
+        open={confirmAction === "suspend" || confirmAction === "activate"}
         onClose={() => setConfirmAction(null)}
         onConfirm={toggleActive}
-        title={tenant.active ? "Suspender tenant" : "Activar tenant"}
+        title={confirmAction === "suspend" ? "Suspender tenant" : "Activar tenant"}
         message={
-          tenant.active
+          confirmAction === "suspend"
             ? `¿Estás seguro de suspender a "${tenant.name}"? Todos los usuarios perderán acceso al dashboard hasta que lo reactives.`
             : `¿Activar a "${tenant.name}"? Los usuarios podrán acceder nuevamente.`
         }
-        confirmText={tenant.active ? "Suspender" : "Activar"}
-        variant={tenant.active ? "danger" : "default"}
+        confirmText={confirmAction === "suspend" ? "Suspender" : "Activar"}
+        variant={confirmAction === "suspend" ? "danger" : "default"}
+      />
+
+      <ConfirmModal
+        open={confirmAction === "delete"}
+        onClose={() => setConfirmAction(null)}
+        onConfirm={deleteTenant}
+        title="Eliminar tenant"
+        message={`¿Estás seguro de eliminar permanentemente a "${tenant.name}"? Se borrarán todos los datos asociados (usuarios, reservas, socios, productos, etc.). Esta acción no se puede deshacer.`}
+        confirmText="Eliminar"
+        variant="danger"
       />
 
       <div className="text-[13px] text-muted-foreground mb-6 space-y-0.5">
         <p><span className="font-bold text-foreground">Email:</span> {tenant.email}</p>
         <p><span className="font-bold text-foreground">Slug:</span> {tenant.slug}</p>
-        <p className="flex items-center gap-2">
-          <span className="font-bold text-foreground">Plan:</span>
-          <select
-            value={tenant.plan}
-            onChange={(e) => changePlan(e.target.value)}
-            disabled={changingPlan}
-            className="px-2.5 py-1 border border-input rounded-[8px] text-[12px] font-bold bg-background text-foreground capitalize focus:outline-none focus:border-primary disabled:opacity-50"
-          >
-            {plans.map((p) => (
-              <option key={p.slug} value={p.slug}>
-                {p.name} {p.price > 0 ? `($${(p.price / 100).toFixed(2)}/mes)` : "(Gratis)"}
-              </option>
-            ))}
-          </select>
-          {changingPlan && <span className="text-[11px] text-muted-foreground">Cambiando...</span>}
-        </p>
+        <p><span className="font-bold text-foreground">Plan:</span> <span className="text-foreground capitalize">{tenant.plan}</span></p>
         <p><span className="font-bold text-foreground">Creado:</span> {new Date(tenant.createdAt).toLocaleDateString("es-CR", { day: "numeric", month: "long", year: "numeric" })}</p>
+        {tenant.settings?.businessType && <p><span className="font-bold text-foreground">Tipo:</span> <span className="text-foreground capitalize">{tenant.settings.businessType}</span></p>}
+        {tenant.settings?.category && <p><span className="font-bold text-foreground">Categoría:</span> <span className="text-foreground">{tenant.settings.category}</span></p>}
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-6">

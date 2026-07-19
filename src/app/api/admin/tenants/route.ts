@@ -41,7 +41,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { name, email, password } = body;
+    const { name, email, password, businessType, category, modules: selectedModules } = body;
 
     if (!name || !email || !password) {
       return NextResponse.json({ error: "Nombre, email y contraseña requeridos" }, { status: 400 });
@@ -82,10 +82,13 @@ export async function POST(request: Request) {
         name,
         slug,
         email,
+        plan: "pro",
         settings: {
           create: {
             businessName: name,
             businessEmail: email,
+            businessType: businessType || null,
+            category: category || null,
           },
         },
       },
@@ -102,13 +105,14 @@ export async function POST(request: Request) {
       },
     });
 
-    // Activate default modules (bookings + staff)
-    const modules = await prisma.module.findMany({
-      where: { key: { in: ["bookings", "staff"] } },
+    // Activate selected modules (default to bookings + staff if none provided)
+    const moduleKeys = selectedModules?.length > 0 ? selectedModules : ["bookings", "staff"];
+    const dbModules = await prisma.module.findMany({
+      where: { key: { in: moduleKeys } },
     });
-    if (modules.length > 0) {
+    if (dbModules.length > 0) {
       await prisma.tenantModule.createMany({
-        data: modules.map((m) => ({
+        data: dbModules.map((m) => ({
           tenantId: tenant.id,
           moduleId: m.id,
           active: true,
