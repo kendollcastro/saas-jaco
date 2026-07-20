@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
+import Link from "next/link";
 import SlideOver from "@/components/slide-over";
 import { formatPhone, waPhone } from "@/lib/phone";
-import { Clock, Dumbbell } from "lucide-react";
+import { Clock, Dumbbell, Tag } from "lucide-react";
 
 const months = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
 
@@ -62,6 +63,7 @@ const tabs = [
 
 export default function MembersPage() {
   const [members, setMembers] = useState<any[]>([]);
+  const [plans, setPlans] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -141,10 +143,15 @@ export default function MembersPage() {
 
   function load() {
     setLoading(true);
-    fetch("/api/members")
-      .then((r) => r.json())
-      .then((data) => setMembers(Array.isArray(data) ? data : []))
-      .catch(() => toast.error("Error al cargar socios"))
+    Promise.all([
+      fetch("/api/members").then((r) => r.json()),
+      fetch("/api/membership-plans").then((r) => r.json()),
+    ])
+      .then(([m, p]) => {
+        setMembers(Array.isArray(m) ? m : []);
+        setPlans(Array.isArray(p) ? p : []);
+      })
+      .catch(() => toast.error("Error al cargar datos"))
       .finally(() => setLoading(false));
   }
 
@@ -156,6 +163,8 @@ export default function MembersPage() {
     e.preventDefault();
     setSubmitting(true);
     const fd = new FormData(e.currentTarget);
+    const rawPlan = fd.get("planId") as string;
+    const isLegacy = ["mensual", "trimestral", "semestral", "anual"].includes(rawPlan);
     try {
       const res = await fetch("/api/members", {
         method: "POST",
@@ -164,7 +173,8 @@ export default function MembersPage() {
           name: fd.get("name"),
           phone: fd.get("phone"),
           email: fd.get("email"),
-          membership: fd.get("membership"),
+          planId: isLegacy ? null : (rawPlan || null),
+          membership: isLegacy ? rawPlan : "personalizado",
           startDate: fd.get("startDate"),
           amount: fd.get("amount"),
           paymentMethod: fd.get("paymentMethod"),
@@ -213,17 +223,26 @@ export default function MembersPage() {
     <div className="animate-[jacoFade_0.25s_ease]">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-[21px] font-extrabold tracking-tight text-foreground">Socios</h1>
-        <button
-          id="create-member-btn"
-          onClick={() => setShowForm(true)}
-          className="inline-flex items-center gap-2 bg-primary text-primary-foreground border-none rounded-[10px] px-[17px] py-[11px] text-[14px] font-bold cursor-pointer shadow-lg shadow-primary/20 hover:bg-primary/90 transition"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
-          Nuevo socio
-        </button>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/dashboard/members/plans"
+            className="inline-flex items-center gap-1.5 px-3.5 py-[11px] rounded-[10px] border border-border text-[13px] font-bold text-muted-foreground hover:text-foreground hover:bg-muted/30 transition"
+          >
+            <Tag className="size-[15px]" />
+            Planes
+          </Link>
+          <button
+            id="create-member-btn"
+            onClick={() => setShowForm(true)}
+            className="inline-flex items-center gap-2 bg-primary text-primary-foreground border-none rounded-[10px] px-[17px] py-[11px] text-[14px] font-bold cursor-pointer shadow-lg shadow-primary/20 hover:bg-primary/90 transition"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Nuevo socio
+          </button>
+        </div>
       </div>
 
       {/* Alert banner for expiring soon */}
@@ -470,12 +489,19 @@ export default function MembersPage() {
             </div>
             <div className="grid grid-cols-2 gap-[14px]">
               <div>
-                <label className="block text-[12.5px] font-bold text-muted-foreground mb-[7px]">Membresía</label>
-                <select name="membership" className="w-full px-[13px] py-[11px] border border-input rounded-[10px] text-[14px] font-semibold font-sans text-foreground bg-background cursor-pointer focus:outline-none focus:border-primary transition">
-                  <option value="mensual">Mensual</option>
-                  <option value="trimestral">Trimestral</option>
-                  <option value="semestral">Semestral</option>
-                  <option value="anual">Anual</option>
+                <label className="block text-[12.5px] font-bold text-muted-foreground mb-[7px]">Plan de membresía</label>
+                <select name="planId" className="w-full px-[13px] py-[11px] border border-input rounded-[10px] text-[14px] font-semibold font-sans text-foreground bg-background cursor-pointer focus:outline-none focus:border-primary transition">
+                  <option value="">Seleccionar plan...</option>
+                  {plans.filter((p) => p.active).map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} — ₡{p.price.toLocaleString("es-CR")} / {p.durationDays}d
+                    </option>
+                  ))}
+                  <option disabled>──────────</option>
+                  <option value="mensual">Mensual (legacy)</option>
+                  <option value="trimestral">Trimestral (legacy)</option>
+                  <option value="semestral">Semestral (legacy)</option>
+                  <option value="anual">Anual (legacy)</option>
                 </select>
               </div>
               <div>
@@ -533,7 +559,9 @@ export default function MembersPage() {
                   </div>
                   <div>
                     <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-0.5">Membresía</span>
-                    <span className="text-[14px] font-bold text-foreground">{membershipLabels[selectedMember.membership]}</span>
+                    <span className="text-[14px] font-bold text-foreground">
+                      {selectedMember.plan ? selectedMember.plan.name : (membershipLabels[selectedMember.membership] || selectedMember.membership)}
+                    </span>
                   </div>
                   <div>
                     <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-0.5">Vence</span>

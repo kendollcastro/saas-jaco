@@ -40,6 +40,7 @@ const allNavItems = [
   { label: "Staff", href: "/dashboard/staff", icon: Users, module: "staff" },
   { label: "Socios", href: "/dashboard/members", icon: Dumbbell, module: "memberships" },
   { label: "Notificaciones", href: "/dashboard/notifications", icon: Bell, module: "memberships" },
+  { label: "Planes", href: "/dashboard/members/plans", icon: Dumbbell, module: "memberships" },
   { label: "Horario", href: "/dashboard/schedule", icon: Clock, module: "bookings" },
   { label: "Productos", href: "/dashboard/products", icon: Package, module: "inventory" },
   { label: "Caja", href: "/dashboard/pos", icon: ShoppingCart, module: "inventory" },
@@ -371,6 +372,8 @@ export default function DashboardLayout({
                   ? "Soporte y ayuda"
                   : pathname.startsWith("/dashboard/reports")
                   ? "Reportes y estadísticas"
+                  : pathname.startsWith("/dashboard/members/plans")
+                  ? "Personalizá los planes de membresía"
                   : ""}
               </p>
             </div>

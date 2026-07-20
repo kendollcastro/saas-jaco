@@ -9,7 +9,7 @@ export async function GET() {
 
   const members = await prisma.member.findMany({
     where: { tenantId: apiUser.tenantId },
-    include: { payments: { orderBy: { createdAt: "desc" }, take: 5 } },
+    include: { payments: { orderBy: { createdAt: "desc" }, take: 5 }, plan: true },
     orderBy: { createdAt: "desc" },
     take: 100,
   });
@@ -27,18 +27,32 @@ export async function POST(request: Request) {
 
   const startDate = body.startDate ? new Date(body.startDate) : new Date();
   let endDate: Date | null = null;
-  if (body.membership === "mensual") {
-    endDate = new Date(startDate);
-    endDate.setMonth(endDate.getMonth() + 1);
-  } else if (body.membership === "trimestral") {
-    endDate = new Date(startDate);
-    endDate.setMonth(endDate.getMonth() + 3);
-  } else if (body.membership === "semestral") {
-    endDate = new Date(startDate);
-    endDate.setMonth(endDate.getMonth() + 6);
-  } else if (body.membership === "anual") {
-    endDate = new Date(startDate);
-    endDate.setFullYear(endDate.getFullYear() + 1);
+  let planId = body.planId || null;
+
+  if (planId) {
+    const plan = await prisma.membershipPlan.findUnique({ where: { id: planId } });
+    if (plan) {
+      endDate = new Date(startDate);
+      endDate.setDate(endDate.getDate() + plan.durationDays);
+    } else {
+      planId = null;
+    }
+  }
+
+  if (!endDate) {
+    if (body.membership === "mensual") {
+      endDate = new Date(startDate);
+      endDate.setMonth(endDate.getMonth() + 1);
+    } else if (body.membership === "trimestral") {
+      endDate = new Date(startDate);
+      endDate.setMonth(endDate.getMonth() + 3);
+    } else if (body.membership === "semestral") {
+      endDate = new Date(startDate);
+      endDate.setMonth(endDate.getMonth() + 6);
+    } else if (body.membership === "anual") {
+      endDate = new Date(startDate);
+      endDate.setFullYear(endDate.getFullYear() + 1);
+    }
   }
 
   const member = await prisma.member.create({
@@ -48,11 +62,12 @@ export async function POST(request: Request) {
       phone: normalizePhone(body.phone),
       email: body.email || null,
       membership: body.membership || "mensual",
+      planId,
       startDate,
       endDate,
       notes: body.notes || null,
     },
-    include: { payments: true },
+    include: { payments: true, plan: true },
   });
 
   // Create initial payment if amount provided
@@ -73,7 +88,7 @@ export async function POST(request: Request) {
 
   const updated = await prisma.member.findUnique({
     where: { id: member.id },
-    include: { payments: { orderBy: { createdAt: "desc" } } },
+    include: { payments: { orderBy: { createdAt: "desc" } }, plan: true },
   });
 
   return NextResponse.json(updated, { status: 201 });

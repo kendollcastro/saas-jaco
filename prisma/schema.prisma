@@ -67,6 +67,7 @@ model Tenant {
   scheduleBookings ScheduleBooking[]
   supportTickets   SupportTicket[]
   platformEvents   PlatformEvent[]
+  membershipPlans  MembershipPlan[]
 }
 
 model Module {
@@ -193,6 +194,22 @@ model ScheduleBooking {
   @@index([tenantId, slotId, date])
 }
 
+model MembershipPlan {
+  id          String   @id @default(cuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  name        String   // e.g. "3 días/semana", "Ilimitado mensual"
+  description String?
+  price       Float    @default(0)
+  durationDays Int     @default(30)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  members     Member[]
+}
+
 model Member {
   id        String   @id @default(cuid())
   tenantId  String
@@ -201,7 +218,9 @@ model Member {
   name       String
   phone      String?
   email      String?
-  membership String   @default("mensual") // mensual, trimestral, semestral, anual
+  membership String   @default("mensual") // legacy: mensual, trimestral, semestral, anual
+  planId     String?  // reference to MembershipPlan
+  plan       MembershipPlan? @relation(fields: [planId], references: [id], onDelete: SetNull)
   startDate  DateTime @default(now())
   endDate    DateTime?
   status         String    @default("active") // active, expired, cancelled
