@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 const tabs = [
   { href: "/portal/dashboard", label: "Inicio", icon: "HomeIcon" },
   { href: "/portal/book", label: "Reservar", icon: "CalendarIcon" },
+  { href: "/portal/qr", label: "Mi QR", icon: "QrIcon" },
   { href: "/portal/payments", label: "Pagos", icon: "CardIcon" },
 ];
 
@@ -104,6 +105,12 @@ function TabIcon({ name, active }: { name: string; active: boolean }) {
       return (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className={cls}>
           <rect x="1" y="5" width="22" height="14" rx="2" /><line x1="1" y1="10" x2="23" y2="10" /><line x1="6" y1="16" x2="10" y2="16" />
+        </svg>
+      );
+    case "QrIcon":
+      return (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className={cls}>
+          <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="4" height="4" /><line x1="5" y1="14" x2="5" y2="14.01" />
         </svg>
       );
     default:

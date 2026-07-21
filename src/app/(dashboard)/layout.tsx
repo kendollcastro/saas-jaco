@@ -31,10 +31,12 @@ import {
   Wrench,
   MessageSquare,
   BarChart3,
+  Scan,
 } from "lucide-react";
 
 const allNavItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard, module: null },
+  { label: "Check-in", href: "/dashboard/checkin", icon: Scan, module: "memberships" },
   { label: "Reservas", href: "/dashboard/bookings", icon: Calendar, module: "bookings" },
   { label: "Servicios", href: "/dashboard/services", icon: Tent, module: "bookings" },
   { label: "Staff", href: "/dashboard/staff", icon: Users, module: "staff" },

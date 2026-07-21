@@ -129,7 +129,7 @@ export default function DashboardPage() {
       )}
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-3 gap-3">
         <Link href="/portal/book"
           className="group relative overflow-hidden backdrop-blur-xl bg-card/70 dark:bg-card/50 border border-border/50 rounded-2xl p-5 shadow-lg hover:shadow-xl transition-all">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -141,6 +141,19 @@ export default function DashboardPage() {
             </div>
             <p className="text-[14px] font-bold text-foreground">Reservar horario</p>
             <p className="text-[11px] text-muted-foreground">Elegí tu horario ideal</p>
+          </div>
+        </Link>
+        <Link href="/portal/qr"
+          className="group relative overflow-hidden backdrop-blur-xl bg-card/70 dark:bg-card/50 border border-border/50 rounded-2xl p-5 shadow-lg hover:shadow-xl transition-all">
+          <div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="relative space-y-3">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-500 flex items-center justify-center shadow-lg shadow-violet-500/20">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
+                <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="4" height="4" /><line x1="5" y1="14" x2="5" y2="14.01" />
+              </svg>
+            </div>
+            <p className="text-[14px] font-bold text-foreground">Mi QR</p>
+            <p className="text-[11px] text-muted-foreground">Mostralo al ingresar</p>
           </div>
         </Link>
         <Link href="/portal/payments"
