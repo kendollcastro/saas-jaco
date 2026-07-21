@@ -213,8 +213,8 @@ export default function PlansPage() {
         title={confirmAction?.plan.active ? "Desactivar plan" : "Activar plan"}
         message={
           confirmAction?.plan.active
-            ? `¿Desactivar "${confirmAction.plan.name}"? Los socios con este plan no se verán afectados, pero no podrás asignarlo a nuevos socios.`
-            : `¿Activar "${confirmAction.plan.name}"? Estará disponible para nuevos socios.`
+            ? `¿Desactivar "${confirmAction?.plan.name}"? Los socios con este plan no se verán afectados, pero no podrás asignarlo a nuevos socios.`
+            : `¿Activar "${confirmAction?.plan.name}"? Estará disponible para nuevos socios.`
         }
         confirmText={confirmAction?.plan.active ? "Desactivar" : "Activar"}
         variant={confirmAction?.plan.active ? "danger" : "default"}
