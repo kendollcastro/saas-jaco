@@ -346,7 +346,7 @@ export default function DashboardLayout({
             {isMobile && (
               <button
                 onClick={() => setDrawerOpen(true)}
-                className="w-[38px] h-[38px] rounded-[10px] border border-border bg-background text-muted-foreground flex items-center justify-center flex-shrink-0"
+                className="w-[44px] h-[44px] rounded-[12px] border border-border bg-background text-muted-foreground flex items-center justify-center flex-shrink-0 active:scale-95 transition-transform"
               >
                 <Menu className="size-[18px]" />
               </button>
@@ -355,7 +355,7 @@ export default function DashboardLayout({
               <h1 className="text-[17px] md:text-xl font-extrabold tracking-tight text-foreground truncate">
                 {currentPage}
               </h1>
-              <p className="text-[13px] text-muted-foreground mt-0.5 hidden md:block">
+              <p className="text-[12px] md:text-[13px] text-muted-foreground mt-0.5">
                 {pathname === "/dashboard"
                   ? "Resumen de actividad de hoy"
                   : pathname.startsWith("/dashboard/bookings")
@@ -383,8 +383,8 @@ export default function DashboardLayout({
 
           {/* Date chip */}
           <div className="flex items-center gap-2 text-[13px] font-semibold text-muted-foreground bg-muted rounded-[10px] px-3.5 py-2 flex-shrink-0">
-            <Calendar className="size-[15px]" />
-            <span className="hidden xs:inline">{dateStr}</span>
+            <Calendar className="size-[14px] md:size-[15px]" />
+            <span className="text-[12px] md:text-[13px]">{dateStr}</span>
           </div>
         </header>
 
