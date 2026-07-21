@@ -60,6 +60,7 @@ model Tenant {
   invoices         Invoice[]
   members          Member[]
   memberPayments   MemberPayment[]
+  paymentLinks     PaymentLink[]
   memberAttendance Attendance[]
   products         Product[]
   sales            Sale[]
@@ -229,9 +230,10 @@ model Member {
   pin            String? // hashed 4-digit PIN for portal login
   authToken      String? // session token for portal
 
-  payments   MemberPayment[]
-  attendance Attendance[]
-  sales      Sale[]
+  payments     MemberPayment[]
+  paymentLinks PaymentLink[]
+  attendance   Attendance[]
+  sales        Sale[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -251,6 +253,8 @@ model MemberPayment {
   notes      String?
   sinpeRef   String? // referencia SINPE si aplica
   receiptUrl String? // foto del comprobante de pago
+
+  paymentLink PaymentLink?
 
   createdAt DateTime @default(now())
 }
@@ -487,4 +491,27 @@ model PlatformEvent {
   @@index([type])
   @@index([tenantId])
   @@index([createdAt])
+}
+
+model PaymentLink {
+  id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  memberId  String
+  member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  amount    Float
+  concept   String?
+  status    String   @default("pending") // pending, completed, cancelled
+
+  memberPaymentId String?          @unique
+  memberPayment   MemberPayment?   @relation(fields: [memberPaymentId], references: [id])
+
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime?
+  completedAt DateTime?
+
+  @@index([token])
+  @@index([tenantId])
+  @@index([memberId])
 }
