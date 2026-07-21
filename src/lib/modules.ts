@@ -18,8 +18,8 @@ export async function getActiveModules(tenantId: string) {
 }
 
 export async function isModuleActive(tenantId: string, moduleKey: string) {
-  const tm = await prisma.tenantModule.findUnique({
-    where: { tenantId_moduleId: { tenantId, moduleId: moduleKey } },
+  const tm = await prisma.tenantModule.findFirst({
+    where: { tenantId, module: { key: moduleKey } },
   });
   return tm?.active ?? false;
 }

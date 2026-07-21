@@ -103,6 +103,8 @@ model User {
   tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
 }
 
 model TenantSetting {
@@ -209,6 +211,8 @@ model MembershipPlan {
   updatedAt   DateTime @updatedAt
 
   members     Member[]
+
+  @@index([tenantId])
 }
 
 model Member {
@@ -236,6 +240,11 @@ model Member {
   sales        Sale[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, endDate])
+  @@index([authToken])
 }
 
 model MemberPayment {
@@ -257,6 +266,8 @@ model MemberPayment {
   paymentLink PaymentLink?
 
   createdAt DateTime @default(now())
+
+  @@index([tenantId, memberId])
 }
 
 model Attendance {
@@ -269,6 +280,9 @@ model Attendance {
 
   dateIn  DateTime @default(now())
   dateOut DateTime?
+
+  @@index([tenantId, dateIn])
+  @@index([memberId])
 }
 
 model Product {
@@ -288,6 +302,8 @@ model Product {
   sales    SaleItem[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
 }
 
 model Sale {
@@ -306,6 +322,8 @@ model Sale {
   status   String @default("completed")
 
   createdAt DateTime @default(now())
+
+  @@index([tenantId, createdAt])
 }
 
 model SaleItem {
@@ -377,6 +395,9 @@ model Invoice {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([tenantId, status])
 }
 
 model InvoiceItem {
@@ -408,6 +429,8 @@ model Service {
   bookings Booking[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
 }
 
 model Booking {
@@ -435,6 +458,10 @@ model Booking {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([tenantId, date])
+  @@index([tenantId, status])
 }
 
 model Staff {
@@ -451,6 +478,8 @@ model Staff {
   bookings Booking[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
 }
 
 model SupportTicket {
@@ -466,6 +495,9 @@ model SupportTicket {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([tenantId, status])
 }
 
 model SupportMessage {

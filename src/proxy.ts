@@ -13,16 +13,19 @@ function validateOrigin(request: NextRequest): boolean {
 
   const origin = request.headers.get("origin");
   const referer = request.headers.get("referer");
+  const value = origin || referer;
+  if (!value) return true;
 
-  if (origin) {
-    return ALLOWED_ORIGINS.some(
-      (a) => a && (origin === a || origin.startsWith(a + "/") || origin.startsWith(a + ":"))
-    );
+  try {
+    const parsed = new URL(value);
+    return ALLOWED_ORIGINS.some((a) => {
+      if (!a) return false;
+      const allowed = new URL(a);
+      return parsed.hostname === allowed.hostname && parsed.port === allowed.port;
+    });
+  } catch {
+    return false;
   }
-  if (referer) {
-    return ALLOWED_ORIGINS.some((a) => a && referer.startsWith(a));
-  }
-  return true;
 }
 
 export async function proxy(request: NextRequest) {

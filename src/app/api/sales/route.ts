@@ -25,14 +25,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Carrito vacío" }, { status: 400 });
   }
 
-  // Validate stock and calculate totals
+  // Batch validate stock and calculate totals
+  const productIds = body.items.map((i: any) => i.productId);
+  const products = await prisma.product.findMany({
+    where: { id: { in: productIds }, tenantId: apiUser.tenantId },
+  });
+  const productMap = new Map(products.map((p) => [p.id, p]));
+
   let subtotal = 0;
-  const saleItems = [];
+  const saleItems: any[] = [];
 
   for (const item of body.items) {
-    const product = await prisma.product.findFirst({
-      where: { id: item.productId, tenantId: apiUser.tenantId },
-    });
+    const product = productMap.get(item.productId);
     if (!product) {
       return NextResponse.json({ error: `Producto no encontrado: ${item.productId}` }, { status: 400 });
     }
@@ -64,13 +68,15 @@ export async function POST(request: Request) {
     include: { items: true, member: true },
   });
 
-  // Deduct stock
-  for (const item of body.items) {
-    await prisma.product.update({
-      where: { id: item.productId },
-      data: { stock: { decrement: item.quantity } },
-    });
-  }
+  // Deduct stock in batch
+  await prisma.$transaction(
+    body.items.map((item: any) =>
+      prisma.product.update({
+        where: { id: item.productId },
+        data: { stock: { decrement: item.quantity } },
+      })
+    )
+  );
 
   return NextResponse.json(sale, { status: 201 });
 }
