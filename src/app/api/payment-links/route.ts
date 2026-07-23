@@ -19,7 +19,7 @@ export async function POST(request: Request) {
   if (!member) return NextResponse.json({ error: "Miembro no encontrado" }, { status: 404 });
 
   const token = crypto.randomBytes(24).toString("hex");
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${process.env.VERCEL_URL || "saas-jaco.vercel.app"}`;
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${process.env.VERCEL_URL || "olasaas.vercel.app"}`;
 
   const link = await prisma.paymentLink.create({
     data: {
