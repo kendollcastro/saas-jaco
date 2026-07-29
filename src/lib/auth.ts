@@ -1,5 +1,8 @@
 import { prisma } from "./prisma";
 import { createClient } from "./supabase/server";
+import { sendEmail } from "./email";
+import WelcomeEmail from "@/emails/welcome";
+import { render } from "@react-email/components";
 
 export async function syncUser() {
   const supabase = await createClient();
@@ -16,6 +19,8 @@ export async function syncUser() {
 
   // Find or create tenant for this user
   let tenant = await prisma.tenant.findFirst({ where: { email } });
+
+  const isNewTenant = !tenant;
 
   if (!tenant) {
     const slug = email.split("@")[0].replace(/[^a-z0-9]/gi, "-").toLowerCase();
@@ -46,6 +51,18 @@ export async function syncUser() {
         })),
       });
     }
+  }
+
+  // Send welcome email on first-time registration
+  if (isNewTenant) {
+    const html = await render(
+      WelcomeEmail({
+        name,
+        tenantName: tenant!.name,
+        dashboardUrl: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/dashboard`,
+      })
+    );
+    await sendEmail({ to: email, subject: "Bienvenido a Ola Saas", html });
   }
 
   // Create user record
