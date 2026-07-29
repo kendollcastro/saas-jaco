@@ -13,6 +13,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
+    if (pathname === "/admin/login") {
+      setChecking(false);
+      return;
+    }
+
     fetch("/api/me")
       .then((r) => {
         if (!r.ok) throw new Error("Unauthorized");
@@ -28,11 +33,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       .catch(() => {
         router.replace("/admin/login");
       });
-  }, [router]);
+  }, [router, pathname]);
 
   useEffect(() => {
     setDrawerOpen(false);
   }, [pathname]);
+
+  if (pathname === "/admin/login") return <>{children}</>;
 
   if (checking) {
     return (
@@ -41,8 +48,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </div>
     );
   }
-
-  if (pathname === "/admin/login") return <>{children}</>;
 
   const sidebar = (
     <div className="flex flex-col h-full">
