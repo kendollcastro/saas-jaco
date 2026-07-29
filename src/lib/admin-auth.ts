@@ -2,7 +2,7 @@ import { getApiUser } from "./api-auth";
 import { prisma } from "./prisma";
 
 function getSuperAdminEmails(): string[] {
-  const raw = process.env.SUPER_ADMIN_EMAILS || "kendollcastro@gmail.com";
+  const raw = process.env.SUPER_ADMIN_EMAILS || "siwakodecr@gmail.com";
   return raw.split(",").map((e: string) => e.trim().toLowerCase());
 }
 
