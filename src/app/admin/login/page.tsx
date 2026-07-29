@@ -17,8 +17,12 @@ export default function AdminLoginPage() {
     setLoading(true);
     setError("");
 
+    const form = new FormData(e.target as HTMLFormElement);
+    const formEmail = (form.get("email") as string) || email;
+    const formPassword = (form.get("password") as string) || password;
+
     const supabase = createClient();
-    const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+    const { error: authError } = await supabase.auth.signInWithPassword({ email: formEmail, password: formPassword });
 
     if (authError) {
       setError("Email o contraseña incorrectos");
@@ -59,9 +63,11 @@ export default function AdminLoginPage() {
               <label className="block text-[12.5px] font-bold text-muted-foreground mb-[7px]">Email</label>
               <input
                 type="email"
+                name="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                autoComplete="email"
                 className="w-full px-[13px] py-[11px] border border-input rounded-[10px] text-[14px] text-foreground bg-background placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-primary/20 transition"
                 placeholder="admin@email.com"
               />
@@ -70,9 +76,11 @@ export default function AdminLoginPage() {
               <label className="block text-[12.5px] font-bold text-muted-foreground mb-[7px]">Contraseña</label>
               <input
                 type="password"
+                name="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                autoComplete="current-password"
                 className="w-full px-[13px] py-[11px] border border-input rounded-[10px] text-[14px] text-foreground bg-background placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-primary/20 transition"
                 placeholder="••••••••"
               />
