@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const registered = searchParams.get("registered") === "true";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -84,6 +86,12 @@ export default function LoginPage() {
             </div>
           </div>
 
+          {registered && (
+            <div className="bg-[#d1fae5] border border-[#6ee7b7] text-[#065f46] text-[13px] font-semibold px-4 py-3 rounded-[11px] mb-4 text-center leading-relaxed">
+              ¡Registro exitoso! Revisá tu correo para confirmar la cuenta antes de iniciar sesión.
+            </div>
+          )}
+
           <div className="text-[25px] font-extrabold tracking-tight text-[#0f172a]">
             Bienvenido de nuevo
           </div>
@@ -159,5 +167,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   );
 }
