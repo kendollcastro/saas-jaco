@@ -23,6 +23,7 @@ function LoginForm() {
   const slug = searchParams.get("slug");
   const [phone, setPhone] = useState("");
   const [pin, setPin] = useState("");
+  const [remember, setRemember] = useState(true);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [settings, setSettings] = useState<any>(null);
@@ -48,7 +49,7 @@ function LoginForm() {
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error); return; }
-      setToken(data.token);
+      setToken(data.token, remember);
       storeMember(data.member);
       router.push("/portal/dashboard");
     } catch { setError("Error de conexión"); }
@@ -83,6 +84,15 @@ function LoginForm() {
             <input value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))} type="password" maxLength={6} placeholder="••••"
               className="w-full px-4 py-3.5 border border-[#e2e8f0] rounded-xl text-[14px] text-[#0f172a] bg-white placeholder:text-[#94a3b8]/50 focus:outline-none focus:border-[#1e40af] focus:ring-2 focus:ring-[#1e40af]/20 transition text-center tracking-[8px]" />
           </div>
+          <label className="flex items-center gap-2.5 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={remember}
+              onChange={(e) => setRemember(e.target.checked)}
+              className="w-[18px] h-[18px] rounded accent-[#1e40af] cursor-pointer"
+            />
+            <span className="text-[13px] font-semibold text-[#64748b]">Recordarme en este dispositivo</span>
+          </label>
           {error && <p className="text-[12px] text-red-600 font-semibold">{error}</p>}
           <button
             type="submit" disabled={loading}
