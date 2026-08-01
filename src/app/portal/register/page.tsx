@@ -4,6 +4,7 @@ import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { setToken, storeMember } from "@/lib/portal-client";
 import Link from "next/link";
+import PhoneInput from "@/components/phone-input";
 const memberships = [
   { key: "mensual", label: "Mensual", months: 1 },
   { key: "trimestral", label: "Trimestral", months: 3 },
@@ -120,8 +121,7 @@ function RegisterForm() {
               </div>
               <div>
                 <label className="block text-[12px] font-bold text-muted-foreground mb-1.5">Teléfono</label>
-                <input value={form.phone} onChange={(e) => set("phone", e.target.value)} required placeholder="+506 8888 8888"
-                  className="w-full px-4 py-3.5 border border-input rounded-xl text-[14px] font-sans text-foreground bg-background placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition" />
+                <PhoneInput value={form.phone} onChange={(v) => set("phone", v)} />
               </div>
               <div>
                 <label className="block text-[12px] font-bold text-muted-foreground mb-1.5">Email (opcional)</label>

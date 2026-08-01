@@ -4,6 +4,7 @@ import { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { setToken, storeMember } from "@/lib/portal-client";
 import Link from "next/link";
+import PhoneInput from "@/components/phone-input";
 
 export default function LoginPage() {
   return (
@@ -76,8 +77,7 @@ function LoginForm() {
         <form onSubmit={handleSubmit} className="bg-white/70 backdrop-blur-xl border border-[#e8ecf2]/50 shadow-2xl rounded-3xl p-7 space-y-4">
           <div>
             <label className="block text-[12px] font-bold text-[#64748b] mb-1.5">Teléfono</label>
-            <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+506 8888 8888"
-              className="w-full px-4 py-3.5 border border-[#e2e8f0] rounded-xl text-[14px] text-[#0f172a] bg-white placeholder:text-[#94a3b8]/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition" />
+            <PhoneInput value={phone} onChange={setPhone} />
           </div>
           <div>
             <label className="block text-[12px] font-bold text-[#64748b] mb-1.5">PIN de 4 dígitos</label>
