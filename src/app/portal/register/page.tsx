@@ -14,8 +14,8 @@ const memberships = [
 export default function RegisterPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#f4f6f9] via-[#f4f6f9] to-[#1e40af]/10">
-        <div className="w-8 h-8 border-2 border-[#1e40af] border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#f4f6f9] via-[#f4f6f9] to-primary/10">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     }>
       <RegisterForm />

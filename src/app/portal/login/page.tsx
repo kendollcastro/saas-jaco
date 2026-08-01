@@ -8,8 +8,8 @@ import Link from "next/link";
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#f4f6f9] via-[#f4f6f9] to-[#1e40af]/10">
-        <div className="w-8 h-8 border-2 border-[#1e40af] border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#f4f6f9] via-[#f4f6f9] to-primary/10">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     }>
       <LoginForm />
@@ -57,13 +57,13 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-5 bg-gradient-to-br from-[#f4f6f9] via-[#f4f6f9] to-[#1e40af]/10">
+    <div className="min-h-screen flex items-center justify-center p-5 bg-gradient-to-br from-[#f4f6f9] via-[#f4f6f9] to-primary/10">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           {settings?.logoUrl ? (
             <img src={settings.logoUrl} alt={settings.businessName} className="h-16 mx-auto mb-4 object-contain" />
           ) : (
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#1e40af] to-[#3b82f6] flex items-center justify-center mx-auto mb-4 shadow-xl shadow-[#1e40af]/20">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-blue-500 flex items-center justify-center mx-auto mb-4 shadow-xl shadow-primary/20">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
                 <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" />
               </svg>
@@ -77,32 +77,32 @@ function LoginForm() {
           <div>
             <label className="block text-[12px] font-bold text-[#64748b] mb-1.5">Teléfono</label>
             <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+506 8888 8888"
-              className="w-full px-4 py-3.5 border border-[#e2e8f0] rounded-xl text-[14px] text-[#0f172a] bg-white placeholder:text-[#94a3b8]/50 focus:outline-none focus:border-[#1e40af] focus:ring-2 focus:ring-[#1e40af]/20 transition" />
+              className="w-full px-4 py-3.5 border border-[#e2e8f0] rounded-xl text-[14px] text-[#0f172a] bg-white placeholder:text-[#94a3b8]/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition" />
           </div>
           <div>
             <label className="block text-[12px] font-bold text-[#64748b] mb-1.5">PIN de 4 dígitos</label>
             <input value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))} type="password" maxLength={6} placeholder="••••"
-              className="w-full px-4 py-3.5 border border-[#e2e8f0] rounded-xl text-[14px] text-[#0f172a] bg-white placeholder:text-[#94a3b8]/50 focus:outline-none focus:border-[#1e40af] focus:ring-2 focus:ring-[#1e40af]/20 transition text-center tracking-[8px]" />
+              className="w-full px-4 py-3.5 border border-[#e2e8f0] rounded-xl text-[14px] text-[#0f172a] bg-white placeholder:text-[#94a3b8]/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition text-center tracking-[8px]" />
           </div>
           <label className="flex items-center gap-2.5 cursor-pointer select-none">
             <input
               type="checkbox"
               checked={remember}
               onChange={(e) => setRemember(e.target.checked)}
-              className="w-[18px] h-[18px] rounded accent-[#1e40af] cursor-pointer"
+              className="w-[18px] h-[18px] rounded accent-primary cursor-pointer"
             />
             <span className="text-[13px] font-semibold text-[#64748b]">Recordarme en este dispositivo</span>
           </label>
           {error && <p className="text-[12px] text-red-600 font-semibold">{error}</p>}
           <button
             type="submit" disabled={loading}
-            className="w-full py-3.5 border-none rounded-xl text-[14px] font-bold bg-gradient-to-r from-[#1e40af] to-[#3b82f6] text-white cursor-pointer shadow-xl shadow-[#1e40af]/25 hover:shadow-[#1e40af]/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3.5 border-none rounded-xl text-[14px] font-bold bg-gradient-to-r from-primary to-blue-500 text-white cursor-pointer shadow-xl shadow-primary/25 hover:shadow-primary/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? "Entrando..." : "Entrar"}
           </button>
           <p className="text-center text-[12px] text-[#64748b]">
             ¿No tenés cuenta?{" "}
-            <Link href="/portal/register" className="text-[#1e40af] font-bold hover:underline">Registrate</Link>
+            <Link href="/portal/register" className="text-primary font-bold hover:underline">Registrate</Link>
           </p>
         </form>
       </div>

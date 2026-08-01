@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import PortalTheme from "@/components/portal-theme";
 
 export const metadata: Metadata = {
   title: "Portal de Socios",
@@ -6,5 +7,10 @@ export const metadata: Metadata = {
 };
 
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+  return (
+    <>
+      <PortalTheme />
+      {children}
+    </>
+  );
 }
