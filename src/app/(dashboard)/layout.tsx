@@ -78,7 +78,7 @@ export default function DashboardLayout({
   const [notifCount, setNotifCount] = useState(0);
   const [businessName, setBusinessName] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
-  const [activeModules, setActiveModules] = useState<string[]>([]);
+  const [activeModules, setActiveModules] = useState<string[]>(["memberships", "bookings", "staff", "inventory", "invoicing"]);
   const [bookingNavLabel, setBookingNavLabel] = useState("");
   const [maintenance, setMaintenance] = useState<{ enabled: boolean; message: string } | null>(null);
   const [onboarding, setOnboarding] = useState<{ needsOnboarding: boolean; progress: any } | null>(null);
