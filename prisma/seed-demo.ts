@@ -3,6 +3,7 @@ import { config as loadEnv } from "dotenv";
 loadEnv({ path: ".env.local" });
 import { PrismaClient } from "@prisma/client";
 import { createClient } from "@supabase/supabase-js";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
@@ -184,11 +185,15 @@ async function main() {
   await prisma.member.deleteMany({ where: { tenantId: tenant.id } });
 
   const createdMembers: { id: string; name: string }[] = [];
-  for (const m of MEMBERS) {
+  for (let i = 0; i < MEMBERS.length; i++) {
+    const m = MEMBERS[i];
     const plan = randomItem(createdPlans);
     const startDate = randomDate(60);
     const endDate = new Date(startDate);
     endDate.setDate(endDate.getDate() + plan.durationDays);
+
+    const pin = (1000 + i * 7) % 10000;
+    const pinStr = pin.toString().padStart(4, "0");
 
     const member = await prisma.member.create({
       data: {
@@ -201,8 +206,10 @@ async function main() {
         startDate,
         endDate,
         status: "active",
+        pin: bcrypt.hashSync(pinStr, 10),
       },
     });
+    console.log(`    ${m.name}: ${m.phone} / PIN ${pinStr}`);
     createdMembers.push(member);
 
     // Payment for this membership
