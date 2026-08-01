@@ -4,6 +4,7 @@ loadEnv({ path: ".env.local" });
 import { PrismaClient } from "@prisma/client";
 import { createClient } from "@supabase/supabase-js";
 import bcrypt from "bcryptjs";
+import { normalizePhone } from "../src/lib/phone";
 
 const prisma = new PrismaClient();
 
@@ -199,7 +200,7 @@ async function main() {
       data: {
         tenantId: tenant.id,
         name: m.name,
-        phone: m.phone,
+        phone: normalizePhone(m.phone),
         email: m.email,
         membership: plan.name,
         planId: plan.id,
