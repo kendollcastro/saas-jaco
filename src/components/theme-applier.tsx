@@ -49,8 +49,20 @@ function applyTheme(preset: string, customColor?: string, logoUrl?: string) {
   }
 }
 
-export default function ThemeApplier() {
+export default function ThemeApplier({
+  themePreset,
+  colorPrimary,
+  logoUrl,
+}: {
+  themePreset?: string;
+  colorPrimary?: string;
+  logoUrl?: string;
+}) {
   useEffect(() => {
+    if (themePreset) {
+      applyTheme(themePreset, colorPrimary, logoUrl);
+      return;
+    }
     fetch("/api/settings")
       .then((r) => {
         if (!r.ok) throw new Error("Settings fetch failed: " + r.status);
@@ -63,7 +75,7 @@ export default function ThemeApplier() {
         console.warn("Theme fallback:", err?.message);
         applyTheme("default");
       });
-  }, []);
+  }, [themePreset, colorPrimary, logoUrl]);
 
   return null;
 }
