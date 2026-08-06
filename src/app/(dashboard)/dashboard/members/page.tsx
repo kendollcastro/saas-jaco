@@ -70,6 +70,8 @@ export default function MembersPage() {
   const [search, setSearch] = useState("");
   const [selectedMember, setSelectedMember] = useState<any | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [profileSaving, setProfileSaving] = useState(false);
   const [paySubmitting, setPaySubmitting] = useState(false);
   const [statusTab, setStatusTab] = useState("all");
   const [page, setPage] = useState(0);
@@ -179,6 +181,14 @@ export default function MembersPage() {
           amount: fd.get("amount"),
           paymentMethod: fd.get("paymentMethod"),
           notes: fd.get("notes"),
+          birthDate: fd.get("birthDate"),
+          gender: fd.get("gender"),
+          weightKg: fd.get("weightKg"),
+          heightCm: fd.get("heightCm"),
+          emergencyContact: fd.get("emergencyContact"),
+          emergencyPhone: fd.get("emergencyPhone"),
+          medicalConditions: fd.get("medicalConditions"),
+          objective: fd.get("objective"),
         }),
       });
       if (res.ok) {
@@ -216,6 +226,58 @@ export default function MembersPage() {
       toast.error("Error al registrar pago");
     } finally {
       setPaySubmitting(false);
+    }
+  }
+
+  function calcAge(birthDate: string | null): number | null {
+    if (!birthDate) return null;
+    const b = new Date(birthDate);
+    const now = new Date();
+    let age = now.getFullYear() - b.getFullYear();
+    const m = now.getMonth() - b.getMonth();
+    if (m < 0 || (m === 0 && now.getDate() < b.getDate())) age--;
+    return age;
+  }
+
+  function calcBmi(weightKg: number | null, heightCm: number | null): number | null {
+    if (!weightKg || !heightCm) return null;
+    const h = heightCm / 100;
+    return Math.round((weightKg / (h * h)) * 10) / 10;
+  }
+
+  async function saveProfile(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!selectedMember) return;
+    const fd = new FormData(e.currentTarget);
+    setProfileSaving(true);
+    try {
+      const res = await fetch(`/api/members/${selectedMember.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          birthDate: fd.get("birthDate"),
+          gender: fd.get("gender"),
+          weightKg: fd.get("weightKg"),
+          heightCm: fd.get("heightCm"),
+          emergencyContact: fd.get("emergencyContact"),
+          emergencyPhone: fd.get("emergencyPhone"),
+          medicalConditions: fd.get("medicalConditions"),
+          objective: fd.get("objective"),
+        }),
+      });
+      if (res.ok) {
+        toast.success("Datos actualizados");
+        const data = await res.json();
+        setSelectedMember(data);
+        setEditingProfile(false);
+        load();
+      } else {
+        toast.error("Error al actualizar");
+      }
+    } catch {
+      toast.error("Error al actualizar");
+    } finally {
+      setProfileSaving(false);
     }
   }
 
@@ -528,6 +590,62 @@ export default function MembersPage() {
               <label className="block text-[12.5px] font-bold text-muted-foreground mb-[7px]">Notas</label>
               <textarea name="notes" rows={2} className="w-full px-[13px] py-[11px] border border-input rounded-[10px] text-[14px] font-sans text-foreground bg-background placeholder:text-muted-foreground focus:outline-none focus:border-primary transition resize-none" placeholder="Notas opcionales..." />
             </div>
+            <hr className="border-border" />
+            <div className="flex items-center gap-2">
+              <Dumbbell className="size-4 text-muted-foreground" />
+              <span className="text-[12.5px] font-extrabold text-foreground uppercase tracking-wide">Datos físicos y salud</span>
+              <span className="text-[11px] font-semibold text-muted-foreground">(opcional)</span>
+            </div>
+            <div className="grid grid-cols-3 gap-[14px]">
+              <div>
+                <label className="block text-[12.5px] font-bold text-muted-foreground mb-[7px]">Fecha nacimiento</label>
+                <input name="birthDate" type="date" className="w-full px-[13px] py-[11px] border border-input rounded-[10px] text-[14px] font-sans text-foreground bg-background focus:outline-none focus:border-primary transition" />
+              </div>
+              <div>
+                <label className="block text-[12.5px] font-bold text-muted-foreground mb-[7px]">Sexo</label>
+                <select name="gender" className="w-full px-[13px] py-[11px] border border-input rounded-[10px] text-[14px] font-semibold font-sans text-foreground bg-background cursor-pointer focus:outline-none focus:border-primary transition">
+                  <option value="">—</option>
+                  <option value="masculino">Masculino</option>
+                  <option value="femenino">Femenino</option>
+                  <option value="otro">Otro</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-[12.5px] font-bold text-muted-foreground mb-[7px]">Objetivo</label>
+                <select name="objective" className="w-full px-[13px] py-[11px] border border-input rounded-[10px] text-[14px] font-semibold font-sans text-foreground bg-background cursor-pointer focus:outline-none focus:border-primary transition">
+                  <option value="">—</option>
+                  <option value="Perder peso">Perder peso</option>
+                  <option value="Ganar músculo">Ganar músculo</option>
+                  <option value="Mejorar condición">Mejorar condición</option>
+                  <option value="Salud general">Salud general</option>
+                  <option value="Rehabilitación">Rehabilitación</option>
+                </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-[14px]">
+              <div>
+                <label className="block text-[12.5px] font-bold text-muted-foreground mb-[7px]">Peso (kg)</label>
+                <input name="weightKg" type="number" inputMode="decimal" step="0.1" min="0" placeholder="70.5" className="w-full px-[13px] py-[11px] border border-input rounded-[10px] text-[14px] font-sans text-foreground bg-background placeholder:text-muted-foreground focus:outline-none focus:border-primary transition" />
+              </div>
+              <div>
+                <label className="block text-[12.5px] font-bold text-muted-foreground mb-[7px]">Altura (cm)</label>
+                <input name="heightCm" type="number" inputMode="decimal" step="0.1" min="0" placeholder="170" className="w-full px-[13px] py-[11px] border border-input rounded-[10px] text-[14px] font-sans text-foreground bg-background placeholder:text-muted-foreground focus:outline-none focus:border-primary transition" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-[14px]">
+              <div>
+                <label className="block text-[12.5px] font-bold text-muted-foreground mb-[7px]">Contacto emergencia</label>
+                <input name="emergencyContact" placeholder="Nombre y relación" className="w-full px-[13px] py-[11px] border border-input rounded-[10px] text-[14px] font-sans text-foreground bg-background placeholder:text-muted-foreground focus:outline-none focus:border-primary transition" />
+              </div>
+              <div>
+                <label className="block text-[12.5px] font-bold text-muted-foreground mb-[7px]">Tel. emergencia</label>
+                <input name="emergencyPhone" type="tel" placeholder="+50688888888" className="w-full px-[13px] py-[11px] border border-input rounded-[10px] text-[14px] font-sans text-foreground bg-background placeholder:text-muted-foreground focus:outline-none focus:border-primary transition" />
+              </div>
+            </div>
+            <div>
+              <label className="block text-[12.5px] font-bold text-muted-foreground mb-[7px]">Condiciones médicas / lesiones</label>
+              <textarea name="medicalConditions" rows={2} className="w-full px-[13px] py-[11px] border border-input rounded-[10px] text-[14px] font-sans text-foreground bg-background placeholder:text-muted-foreground focus:outline-none focus:border-primary transition resize-none" placeholder="Alergias, lesiones, condiciones..." />
+            </div>
           </div>
           <div className="flex gap-3 px-[26px] py-[18px] border-t border-border shrink-0">
             <button type="button" onClick={() => setShowForm(false)} className="flex-1 py-[12px] border border-input rounded-[10px] text-[14px] font-bold font-sans bg-background text-muted-foreground cursor-pointer hover:bg-muted/50 transition">Cancelar</button>
@@ -540,7 +658,7 @@ export default function MembersPage() {
 
       <SlideOver
         open={detailOpen}
-        onClose={() => { setDetailOpen(false); setSelectedMember(null); }}
+        onClose={() => { setDetailOpen(false); setSelectedMember(null); setEditingProfile(false); }}
         title={selectedMember?.name || ""}
         description="Detalle del socio"
       >
@@ -585,6 +703,142 @@ export default function MembersPage() {
                     <CobrarButton memberId={selectedMember.id} name={selectedMember.name} phone={selectedMember.phone} />
                   </div>
                 )}
+
+                {/* Datos personales / perfil */}
+                <div className="border border-border rounded-xl overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 bg-muted/50 border-b border-border">
+                    <div className="flex items-center gap-2">
+                      <Dumbbell className="size-4 text-muted-foreground" />
+                      <span className="text-[12px] font-extrabold text-foreground uppercase tracking-wide">Datos personales</span>
+                    </div>
+                    {!editingProfile && (
+                      <button
+                        onClick={() => setEditingProfile(true)}
+                        className="px-3 py-1.5 rounded-lg border border-border text-[12px] font-bold text-muted-foreground hover:text-foreground hover:bg-muted transition cursor-pointer"
+                      >
+                        Editar
+                      </button>
+                    )}
+                  </div>
+
+                  {editingProfile ? (
+                    <form onSubmit={saveProfile} className="p-4 space-y-[14px]">
+                      <div className="grid grid-cols-3 gap-[12px]">
+                        <div>
+                          <label className="block text-[11.5px] font-bold text-muted-foreground mb-[5px]">Fecha nacimiento</label>
+                          <input name="birthDate" type="date" defaultValue={selectedMember.birthDate ? new Date(selectedMember.birthDate).toISOString().slice(0, 10) : ""} className="w-full px-[11px] py-[9px] border border-input rounded-[9px] text-[13px] font-sans text-foreground bg-background focus:outline-none focus:border-primary transition" />
+                        </div>
+                        <div>
+                          <label className="block text-[11.5px] font-bold text-muted-foreground mb-[5px]">Sexo</label>
+                          <select name="gender" defaultValue={selectedMember.gender || ""} className="w-full px-[11px] py-[9px] border border-input rounded-[9px] text-[13px] font-semibold font-sans text-foreground bg-background cursor-pointer focus:outline-none focus:border-primary transition">
+                            <option value="">—</option>
+                            <option value="masculino">Masculino</option>
+                            <option value="femenino">Femenino</option>
+                            <option value="otro">Otro</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-[11.5px] font-bold text-muted-foreground mb-[5px]">Objetivo</label>
+                          <select name="objective" defaultValue={selectedMember.objective || ""} className="w-full px-[11px] py-[9px] border border-input rounded-[9px] text-[13px] font-semibold font-sans text-foreground bg-background cursor-pointer focus:outline-none focus:border-primary transition">
+                            <option value="">—</option>
+                            <option value="Perder peso">Perder peso</option>
+                            <option value="Ganar músculo">Ganar músculo</option>
+                            <option value="Mejorar condición">Mejorar condición</option>
+                            <option value="Salud general">Salud general</option>
+                            <option value="Rehabilitación">Rehabilitación</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-[12px]">
+                        <div>
+                          <label className="block text-[11.5px] font-bold text-muted-foreground mb-[5px]">Peso (kg)</label>
+                          <input name="weightKg" type="number" inputMode="decimal" step="0.1" min="0" defaultValue={selectedMember.weightKg ?? ""} className="w-full px-[11px] py-[9px] border border-input rounded-[9px] text-[13px] font-sans text-foreground bg-background focus:outline-none focus:border-primary transition" />
+                        </div>
+                        <div>
+                          <label className="block text-[11.5px] font-bold text-muted-foreground mb-[5px]">Altura (cm)</label>
+                          <input name="heightCm" type="number" inputMode="decimal" step="0.1" min="0" defaultValue={selectedMember.heightCm ?? ""} className="w-full px-[11px] py-[9px] border border-input rounded-[9px] text-[13px] font-sans text-foreground bg-background focus:outline-none focus:border-primary transition" />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-[12px]">
+                        <div>
+                          <label className="block text-[11.5px] font-bold text-muted-foreground mb-[5px]">Contacto emergencia</label>
+                          <input name="emergencyContact" defaultValue={selectedMember.emergencyContact || ""} placeholder="Nombre y relación" className="w-full px-[11px] py-[9px] border border-input rounded-[9px] text-[13px] font-sans text-foreground bg-background placeholder:text-muted-foreground focus:outline-none focus:border-primary transition" />
+                        </div>
+                        <div>
+                          <label className="block text-[11.5px] font-bold text-muted-foreground mb-[5px]">Tel. emergencia</label>
+                          <input name="emergencyPhone" type="tel" defaultValue={selectedMember.emergencyPhone || ""} placeholder="+50688888888" className="w-full px-[11px] py-[9px] border border-input rounded-[9px] text-[13px] font-sans text-foreground bg-background placeholder:text-muted-foreground focus:outline-none focus:border-primary transition" />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-[11.5px] font-bold text-muted-foreground mb-[5px]">Condiciones médicas / lesiones</label>
+                        <textarea name="medicalConditions" rows={2} defaultValue={selectedMember.medicalConditions || ""} placeholder="Alergias, lesiones, condiciones..." className="w-full px-[11px] py-[9px] border border-input rounded-[9px] text-[13px] font-sans text-foreground bg-background placeholder:text-muted-foreground focus:outline-none focus:border-primary transition resize-none" />
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setEditingProfile(false)}
+                          className="px-4 py-2 rounded-[9px] border border-input text-[12.5px] font-bold text-muted-foreground bg-background cursor-pointer hover:bg-muted/50 transition"
+                        >
+                          Cancelar
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={profileSaving}
+                          className="px-4 py-2 rounded-[9px] border-none text-[12.5px] font-bold bg-primary text-primary-foreground cursor-pointer hover:bg-primary/90 transition disabled:opacity-50"
+                        >
+                          {profileSaving ? "Guardando..." : "Guardar"}
+                        </button>
+                      </div>
+                    </form>
+                  ) : (
+                    <div className="p-4 space-y-3">
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                        <div>
+                          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-0.5">Cumpleaños</span>
+                          <span className="text-[13.5px] text-foreground">
+                            {selectedMember.birthDate ? `${formatDate(selectedMember.birthDate)} (${calcAge(selectedMember.birthDate)} años)` : "-"}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-0.5">Sexo</span>
+                          <span className="text-[13.5px] capitalize text-foreground">{selectedMember.gender ? selectedMember.gender : "-"}</span>
+                        </div>
+                        <div>
+                          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-0.5">Peso</span>
+                          <span className="text-[13.5px] text-foreground">{selectedMember.weightKg ? `${selectedMember.weightKg} kg` : "-"}</span>
+                        </div>
+                        <div>
+                          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-0.5">Altura</span>
+                          <span className="text-[13.5px] text-foreground">{selectedMember.heightCm ? `${selectedMember.heightCm} cm` : "-"}</span>
+                        </div>
+                        <div>
+                          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-0.5">IMC</span>
+                          <span className="text-[13.5px] text-foreground">
+                            {calcBmi(selectedMember.weightKg, selectedMember.heightCm) !== null ? `${calcBmi(selectedMember.weightKg, selectedMember.heightCm)}` : "-"}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-0.5">Objetivo</span>
+                          <span className="text-[13.5px] text-foreground">{selectedMember.objective || "-"}</span>
+                        </div>
+                      </div>
+                      {(selectedMember.emergencyContact || selectedMember.emergencyPhone) && (
+                        <div>
+                          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-0.5">Contacto emergencia</span>
+                          <span className="text-[13.5px] text-foreground">
+                            {[selectedMember.emergencyContact, selectedMember.emergencyPhone && formatPhone(selectedMember.emergencyPhone)].filter(Boolean).join(" · ") || "-"}
+                          </span>
+                        </div>
+                      )}
+                      {selectedMember.medicalConditions && (
+                        <div>
+                          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-0.5">Condiciones médicas</span>
+                          <span className="text-[13.5px] text-foreground">{selectedMember.medicalConditions}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
 
                 {/* Renewal section */}
                 {/* Pending confirmation section */}

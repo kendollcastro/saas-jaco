@@ -234,6 +234,16 @@ model Member {
   pin            String? // hashed 4-digit PIN for portal login
   authToken      String? // session token for portal
 
+  // Profile / health fields (optional)
+  birthDate        DateTime?
+  gender           String? // masculino, femenino, otro
+  weightKg         Float?
+  heightCm         Float?
+  emergencyContact String?
+  emergencyPhone   String?
+  medicalConditions String?
+  objective        String?
+
   payments     MemberPayment[]
   paymentLinks PaymentLink[]
   attendance   Attendance[]
