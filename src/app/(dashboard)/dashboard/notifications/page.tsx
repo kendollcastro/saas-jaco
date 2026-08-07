@@ -4,21 +4,16 @@ import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { waPhone } from "@/lib/phone";
 import { Clock, CircleAlert, CheckCircle } from "lucide-react";
+import { fmtStoredDate, daysUntilStoredDate } from "@/lib/utils";
 
 const months = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
 
 function formatDate(d: string) {
-  const dt = new Date(d);
-  return `${dt.getDate()} ${months[dt.getMonth()]} ${dt.getFullYear()}`;
+  return fmtStoredDate(d, months);
 }
 
 function daysRemaining(endDate: string | null): number | null {
-  if (!endDate) return null;
-  const end = new Date(endDate);
-  const now = new Date();
-  now.setHours(0, 0, 0, 0);
-  end.setHours(0, 0, 0, 0);
-  return Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  return daysUntilStoredDate(endDate);
 }
 
 function getWhatsAppLink(phone: string, memberName: string, endDate: string | null) {

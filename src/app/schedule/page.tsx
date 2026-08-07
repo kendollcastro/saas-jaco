@@ -1,20 +1,21 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { fmtTime } from "@/lib/utils";
+import { fmtTime, localDateOnly } from "@/lib/utils";
 
 const dayNames = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 const dayNamesShort = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 
 function getWeekDates() {
   const today = new Date();
-  const monday = new Date(today);
-  monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+  const sunday = new Date(today);
+  sunday.setDate(today.getDate() - today.getDay()); // 0=Sun
   return Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
+    const d = new Date(sunday);
+    d.setDate(sunday.getDate() + i);
     return d;
   });
 }
@@ -24,6 +25,16 @@ function formatTime(t: string) {
 }
 
 export default function PublicSchedulePage() {
+  return (
+    <Suspense fallback={null}>
+      <PublicScheduleInner />
+    </Suspense>
+  );
+}
+
+function PublicScheduleInner() {
+  const searchParams = useSearchParams();
+  const slug = searchParams.get("slug");
   const [slots, setSlots] = useState<any[]>([]);
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,10 +46,12 @@ export default function PublicSchedulePage() {
 
   const weekDates = useMemo(() => getWeekDates(), []);
 
+  const qs = slug ? `?slug=${encodeURIComponent(slug)}` : "";
+
   useEffect(() => {
     Promise.all([
-      fetch("/api/public/schedule-slots").then((r) => r.json()).catch(() => []),
-      fetch("/api/public/schedule-bookings").then((r) => r.json()).catch(() => []),
+      fetch(`/api/public/schedule-slots${qs}`).then((r) => r.json()).catch(() => []),
+      fetch(`/api/public/schedule-bookings${qs}`).then((r) => r.json()).catch(() => []),
     ])
       .then(([s, b]) => {
         setSlots(Array.isArray(s) ? s : []);
@@ -46,7 +59,7 @@ export default function PublicSchedulePage() {
       })
       .catch(() => toast.error("Error al cargar horarios"))
       .finally(() => setLoading(false));
-  }, []);
+  }, [qs]);
 
   const slotsByDay = useMemo(() => {
     const map: Record<number, any[]> = {};
@@ -73,16 +86,16 @@ export default function PublicSchedulePage() {
     if (!selectedSlot || selectedDay === null || !form.name.trim()) return;
     setSubmitting(true);
     try {
-      const date = weekDates[selectedDay];
-      const res = await fetch("/api/public/schedule-bookings", {
+      const date = localDateOnly(weekDates[selectedDay]);
+      const res = await fetch(`/api/public/schedule-bookings${qs}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          slotId: selectedSlot.id,
-          memberName: form.name.trim(),
-          memberPhone: form.phone.trim() || null,
-          date: date.toISOString().slice(0, 10),
-        }),
+          body: JSON.stringify({
+            slotId: selectedSlot.id,
+            memberName: form.name.trim(),
+            memberPhone: form.phone.trim() || null,
+            date,
+          }),
       });
       if (res.ok) {
         setStep("done");
@@ -221,7 +234,7 @@ export default function PublicSchedulePage() {
               <div className="lg:col-span-3 space-y-3">
                 {selectedDay !== null && slotsByDay[selectedDay]?.length > 0 ? (
                   slotsByDay[selectedDay].map((slot: any) => {
-                    const dateKey = weekDates[selectedDay].toISOString().slice(0, 10);
+                    const dateKey = localDateOnly(weekDates[selectedDay]);
                     const booked = bookingsBySlot[`${slot.id}_${dateKey}`] || 0;
                     const remaining = slot.capacity - booked;
                     const full = remaining <= 0;

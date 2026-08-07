@@ -6,21 +6,16 @@ import Link from "next/link";
 import SlideOver from "@/components/slide-over";
 import { formatPhone, waPhone } from "@/lib/phone";
 import { Clock, Dumbbell, Tag } from "lucide-react";
+import { fmtStoredDate, daysUntilStoredDate, todayLocalDateOnly } from "@/lib/utils";
 
 const months = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
 
 function formatDate(d: string) {
-  const dt = new Date(d);
-  return `${dt.getDate()} ${months[dt.getMonth()]} ${dt.getFullYear()}`;
+  return fmtStoredDate(d, months);
 }
 
 function daysRemaining(endDate: string | null): number | null {
-  if (!endDate) return null;
-  const end = new Date(endDate);
-  const now = new Date();
-  now.setHours(0, 0, 0, 0);
-  end.setHours(0, 0, 0, 0);
-  return Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  return daysUntilStoredDate(endDate);
 }
 
 function getMemberStatus(m: any): { key: string; label: string; bg: string; color: string } {
@@ -233,9 +228,9 @@ export default function MembersPage() {
     if (!birthDate) return null;
     const b = new Date(birthDate);
     const now = new Date();
-    let age = now.getFullYear() - b.getFullYear();
-    const m = now.getMonth() - b.getMonth();
-    if (m < 0 || (m === 0 && now.getDate() < b.getDate())) age--;
+    let age = now.getFullYear() - b.getUTCFullYear();
+    const m = now.getMonth() - b.getUTCMonth();
+    if (m < 0 || (m === 0 && now.getDate() < b.getUTCDate())) age--;
     return age;
   }
 
@@ -243,6 +238,15 @@ export default function MembersPage() {
     if (!weightKg || !heightCm) return null;
     const h = heightCm / 100;
     return Math.round((weightKg / (h * h)) * 10) / 10;
+  }
+
+  function defaultRenewalAmount(m: any): number {
+    if (m?.plan?.price) return m.plan.price;
+    if (m.membership === "mensual") return 25000;
+    if (m.membership === "trimestral") return 65000;
+    if (m.membership === "semestral") return 120000;
+    if (m.membership === "anual") return 220000;
+    return 25000;
   }
 
   async function saveProfile(e: React.FormEvent<HTMLFormElement>) {
@@ -568,7 +572,7 @@ export default function MembersPage() {
               </div>
               <div>
                 <label className="block text-[12.5px] font-bold text-muted-foreground mb-[7px]">Inicio</label>
-                <input name="startDate" type="date" defaultValue={new Date().toISOString().slice(0, 10)} className="w-full px-[13px] py-[11px] border border-input rounded-[10px] text-[14px] font-sans text-foreground bg-background focus:outline-none focus:border-primary transition" />
+                <input name="startDate" type="date" defaultValue={todayLocalDateOnly()} className="w-full px-[13px] py-[11px] border border-input rounded-[10px] text-[14px] font-sans text-foreground bg-background focus:outline-none focus:border-primary transition" />
               </div>
             </div>
             <hr className="border-border" />
@@ -861,11 +865,7 @@ export default function MembersPage() {
                     <div className="flex gap-2">
                       <input
                         type="number"
-                        defaultValue={
-                          selectedMember.membership === "mensual" ? 25000 :
-                          selectedMember.membership === "trimestral" ? 65000 :
-                          selectedMember.membership === "semestral" ? 120000 : 220000
-                        }
+                        defaultValue={defaultRenewalAmount(selectedMember)}
                         className="flex-1 px-3 py-2 border border-amber-300 rounded-[10px] text-[13px] font-sans text-foreground bg-background focus:outline-none focus:border-amber-500"
                         placeholder="Monto"
                         id="confirm-amount"
@@ -924,11 +924,7 @@ export default function MembersPage() {
                     <div className="flex gap-2">
                       <input
                         type="number"
-                        defaultValue={
-                          selectedMember.membership === "mensual" ? 25000 :
-                          selectedMember.membership === "trimestral" ? 65000 :
-                          selectedMember.membership === "semestral" ? 120000 : 220000
-                        }
+                        defaultValue={defaultRenewalAmount(selectedMember)}
                         className="flex-1 px-3 py-2 border border-amber-300 rounded-[10px] text-[13px] font-sans text-foreground bg-background focus:outline-none focus:border-amber-500"
                         placeholder="Monto"
                         id="renewal-amount"

@@ -12,6 +12,7 @@ export async function POST(
   const { id } = await params;
   const member = await prisma.member.findFirst({
     where: { id, tenantId: apiUser.tenantId },
+    include: { plan: true },
   });
   if (!member) {
     return NextResponse.json({ error: "Socio no encontrado" }, { status: 404 });
@@ -36,7 +37,9 @@ export async function POST(
   // Extend end date from current endDate (or today if expired)
   const baseDate = member.endDate && member.endDate > new Date() ? new Date(member.endDate) : new Date();
   let endDate = new Date(baseDate);
-  if (member.membership === "mensual") endDate.setMonth(endDate.getMonth() + 1);
+  if (member.plan) {
+    endDate.setDate(endDate.getDate() + member.plan.durationDays);
+  } else if (member.membership === "mensual") endDate.setMonth(endDate.getMonth() + 1);
   else if (member.membership === "trimestral") endDate.setMonth(endDate.getMonth() + 3);
   else if (member.membership === "semestral") endDate.setMonth(endDate.getMonth() + 6);
   else if (member.membership === "anual") endDate.setFullYear(endDate.getFullYear() + 1);

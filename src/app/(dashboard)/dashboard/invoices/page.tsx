@@ -4,12 +4,12 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import SlideOver from "@/components/slide-over";
 import { Receipt } from "lucide-react";
+import { fmtStoredDate } from "@/lib/utils";
 
 const months = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
 
 function formatDate(d: string) {
-  const dt = new Date(d);
-  return `${dt.getDate()} ${months[dt.getMonth()]} ${dt.getFullYear()}`;
+  return fmtStoredDate(d, months);
 }
 
 const statusStyles: Record<string, { label: string; bg: string; color: string }> = {

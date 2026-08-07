@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { getToken, clearToken } from "@/lib/portal-client";
+import { todayLocalDateOnly } from "@/lib/utils";
 
 
 export default function PaymentsPage() {
@@ -13,7 +14,7 @@ export default function PaymentsPage() {
   const [payments, setPayments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [amount, setAmount] = useState("");
-  const [paidAt, setPaidAt] = useState(new Date().toISOString().slice(0, 10));
+  const [paidAt, setPaidAt] = useState(todayLocalDateOnly());
   const [method, setMethod] = useState("sinpe");
   const [receiptDataUrl, setReceiptDataUrl] = useState("");
   const [dragOver, setDragOver] = useState(false);

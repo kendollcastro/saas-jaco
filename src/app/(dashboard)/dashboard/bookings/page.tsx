@@ -7,12 +7,12 @@ import { Calendar } from "lucide-react";
 import { formatPhone } from "@/lib/phone";
 import ConfirmModal from "@/components/confirm-modal";
 import { bookingSchema } from "@/lib/validations";
+import { fmtStoredDate } from "@/lib/utils";
 
 const months = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
 
 function formatDate(d: string) {
-  const dt = new Date(d);
-  return `${dt.getDate()} ${months[dt.getMonth()]} ${dt.getFullYear()}`;
+  return fmtStoredDate(d, months);
 }
 
 const statusConfig: Record<string, { label: string; bg: string; color: string }> = {

@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import SlideOver from "@/components/slide-over";
 import ConfirmModal from "@/components/confirm-modal";
-import { fmtTime } from "@/lib/utils";
+import { fmtTime, localDateOnly, utcDateOnly } from "@/lib/utils";
 import { Clock, Pencil, Trash2 } from "lucide-react";
 
 const dayNamesShort = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
@@ -22,7 +22,7 @@ const timePresets = [
 ];
 
 function formatDate(d: Date) {
-  return d.toISOString().slice(0, 10);
+  return localDateOnly(d);
 }
 
 function buildMonthGrid(year: number, month: number) {
@@ -135,7 +135,7 @@ export default function SchedulePage() {
     const map: Record<string, any[]> = {};
     for (const b of bookings) {
       if (b.status === "cancelled") continue;
-      const d = b.date ? new Date(b.date).toISOString().slice(0, 10) : "";
+      const d = b.date ? utcDateOnly(new Date(b.date)) : "";
       if (!map[d]) map[d] = [];
       map[d].push(b);
     }
@@ -290,7 +290,17 @@ export default function SchedulePage() {
                           <div className="text-[11.5px] font-extrabold text-primary leading-none">{fmtTime(s.startTime)}</div>
                           <div className="text-[9.5px] text-primary/70 mt-0.5 leading-none">a {fmtTime(s.endTime)}</div>
                           <div className="text-[9.5px] text-primary/70 mt-0.5">Cupo {s.capacity}</div>
-                          <div className="absolute top-1 right-1 hidden group-hover:flex gap-0.5">
+                          <div className="absolute top-1 right-1 flex gap-0.5 md:hidden">
+                            <button onClick={(e) => { e.stopPropagation(); openEditForm(s); }}
+                              className="size-5 rounded-md bg-card border border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition cursor-pointer" title="Editar">
+                              <Pencil className="size-2.5" />
+                            </button>
+                            <button onClick={(e) => { e.stopPropagation(); setDeleteSlotTarget(s.id); }}
+                              className="size-5 rounded-md bg-card border border-border flex items-center justify-center text-red-500 hover:text-red-600 transition cursor-pointer" title="Eliminar">
+                              <Trash2 className="size-2.5" />
+                            </button>
+                          </div>
+                          <div className="absolute top-1 right-1 hidden md:group-hover:flex gap-0.5">
                             <button onClick={(e) => { e.stopPropagation(); openEditForm(s); }}
                               className="size-5 rounded-md bg-card border border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition cursor-pointer" title="Editar">
                               <Pencil className="size-2.5" />
@@ -417,6 +427,11 @@ export default function SchedulePage() {
                           <span key={b.id} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-muted text-[12px] font-semibold text-foreground">
                             <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
                             {b.memberName}
+                            <button onClick={() => setCancelTarget(b.id)}
+                              className="size-4 rounded-full bg-red-400 text-white flex items-center justify-center hover:bg-red-500 transition cursor-pointer"
+                              title="Cancelar reserva">
+                              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            </button>
                           </span>
                         ))}
                       </div>

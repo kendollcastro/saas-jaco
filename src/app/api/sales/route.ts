@@ -56,27 +56,42 @@ export async function POST(request: Request) {
     });
   }
 
-  const sale = await prisma.sale.create({
-    data: {
-      tenantId: apiUser.tenantId,
-      memberId: body.memberId || null,
-      subtotal,
-      total: subtotal,
-      method: body.method || "efectivo",
-      items: { create: saleItems },
-    },
-    include: { items: true, member: true },
-  });
+  // Create sale + deduct stock atomically so a retry can't duplicate the sale
+  let sale;
+  try {
+    sale = await prisma.$transaction(async (tx) => {
+      const created = await tx.sale.create({
+        data: {
+          tenantId: apiUser.tenantId,
+          memberId: body.memberId || null,
+          subtotal,
+          total: subtotal,
+          method: body.method || "efectivo",
+          items: { create: saleItems },
+        },
+        include: { items: true, member: true },
+      });
 
-  // Deduct stock in batch
-  await prisma.$transaction(
-    body.items.map((item: any) =>
-      prisma.product.update({
-        where: { id: item.productId },
-        data: { stock: { decrement: item.quantity } },
-      })
-    )
-  );
+      // Deduct stock conditionally (idempotent guard against concurrent oversell)
+      for (const item of body.items) {
+        const res = await tx.product.updateMany({
+          where: { id: item.productId, tenantId: apiUser.tenantId, stock: { gte: item.quantity } },
+          data: { stock: { decrement: item.quantity } },
+        });
+        if (res.count === 0) {
+          throw new Error(`Stock insuficiente para ${item.productName}`);
+        }
+      }
+
+      return created;
+    });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "";
+    if (msg.startsWith("Stock insuficiente")) {
+      return NextResponse.json({ error: msg }, { status: 400 });
+    }
+    return NextResponse.json({ error: "Error al registrar la venta" }, { status: 500 });
+  }
 
   return NextResponse.json(sale, { status: 201 });
 }

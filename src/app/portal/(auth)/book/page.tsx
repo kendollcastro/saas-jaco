@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { getToken, clearToken } from "@/lib/portal-client";
-import { fmtTime } from "@/lib/utils";
+import { fmtTime, todayLocalDateOnly, localDateOnly, parseDateInput } from "@/lib/utils";
 const dayNames = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
 export default function BookPage() {
@@ -13,7 +13,7 @@ export default function BookPage() {
   const [loading, setLoading] = useState(true);
   const [selectedDay, setSelectedDay] = useState(new Date().getDay());
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
-  const [bookingDate, setBookingDate] = useState(new Date().toISOString().slice(0, 10));
+  const [bookingDate, setBookingDate] = useState(todayLocalDateOnly());
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
@@ -37,7 +37,7 @@ export default function BookPage() {
     const diff = dayOfWeek - d.getDay();
     if (diff < 0) d.setDate(d.getDate() + diff + 7);
     else if (diff > 0) d.setDate(d.getDate() + diff);
-    return d.toISOString().slice(0, 10);
+    return localDateOnly(d);
   };
 
   function selectDay(day: number) {
@@ -78,7 +78,7 @@ export default function BookPage() {
           </div>
           <h2 className="text-[20px] font-extrabold text-foreground">Reserva confirmada!</h2>
           <p className="text-[13px] text-muted-foreground">
-            Te esperamos el {new Date(bookingDate).toLocaleDateString("es-CR", { weekday: "long", day: "numeric", month: "long" })}
+            Te esperamos el {parseDateInput(bookingDate).toLocaleDateString("es-CR", { weekday: "long", day: "numeric", month: "long" })}
           </p>
           <button onClick={() => router.push("/portal/dashboard")}
             className="w-full py-3.5 border-none rounded-xl text-[14px] font-bold bg-gradient-to-r from-primary to-blue-500 text-primary-foreground cursor-pointer shadow-xl shadow-primary/25 hover:shadow-primary/40 transition-all">

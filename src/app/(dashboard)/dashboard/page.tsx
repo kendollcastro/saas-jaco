@@ -6,11 +6,12 @@ import {
   UserPlus, Zap,
 } from "lucide-react";
 import { toast } from "sonner";
+import { fmtStoredDate } from "@/lib/utils";
 
 const months = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
 function fmt(d: string) {
   const dt = new Date(d);
-  return `${dt.getDate()} ${months[dt.getMonth()]}`;
+  return `${dt.getUTCDate()} ${months[dt.getUTCMonth()]}`;
 }
 
 interface Stats {

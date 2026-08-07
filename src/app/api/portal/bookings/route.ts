@@ -29,6 +29,9 @@ export async function POST(request: Request) {
     include: { _count: { select: { bookings: { where: { date: new Date(date), status: "confirmed" } } } } },
   });
   if (!slot || !slot.active) return NextResponse.json({ error: "Horario no disponible" }, { status: 400 });
+  if (slot.dayOfWeek !== new Date(date).getUTCDay()) {
+    return NextResponse.json({ error: "La fecha no corresponde al día del horario seleccionado" }, { status: 400 });
+  }
   if (slot._count.bookings >= slot.capacity) return NextResponse.json({ error: "Cupo lleno" }, { status: 400 });
 
   const booking = await prisma.scheduleBooking.create({

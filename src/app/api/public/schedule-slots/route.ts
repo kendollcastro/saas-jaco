@@ -1,8 +1,15 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getPortalTenant } from "@/lib/portal-auth";
 
-export async function GET() {
-  const tenant = await prisma.tenant.findFirst({ where: { active: true }, orderBy: { createdAt: "asc" } });
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  let tenant;
+  try {
+    tenant = await getPortalTenant(searchParams.get("slug"));
+  } catch {
+    return NextResponse.json([]);
+  }
   if (!tenant) return NextResponse.json([]);
 
   const slots = await prisma.scheduleSlot.findMany({
