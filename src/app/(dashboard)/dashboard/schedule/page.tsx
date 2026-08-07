@@ -5,8 +5,21 @@ import { toast } from "sonner";
 import SlideOver from "@/components/slide-over";
 import ConfirmModal from "@/components/confirm-modal";
 import { fmtTime } from "@/lib/utils";
+import { Clock, Pencil, Trash2 } from "lucide-react";
 
 const dayNamesShort = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+
+const dayPresets = [
+  { label: "Lun-Vie", days: [1, 2, 3, 4, 5] },
+  { label: "Fin de semana", days: [0, 6] },
+  { label: "Todos los días", days: [0, 1, 2, 3, 4, 5, 6] },
+];
+
+const timePresets = [
+  { label: "Mañana", start: "06:00", end: "10:00" },
+  { label: "Tarde", start: "14:00", end: "18:00" },
+  { label: "Noche", start: "18:00", end: "21:00" },
+];
 
 function formatDate(d: Date) {
   return d.toISOString().slice(0, 10);
@@ -43,10 +56,14 @@ export default function SchedulePage() {
   const [showForm, setShowForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [editing, setEditing] = useState<any | null>(null);
+  const [selectedDays, setSelectedDays] = useState<number[]>([1]);
+  const [startTime, setStartTime] = useState("06:00");
+  const [endTime, setEndTime] = useState("07:00");
   const [selectedDay, setSelectedDay] = useState<Date>(now);
   const [detailDay, setDetailDay] = useState<Date | null>(null);
   const [viewMode, setViewMode] = useState<"month" | "week">("month");
   const [cancelTarget, setCancelTarget] = useState<string | null>(null);
+  const [deleteSlotTarget, setDeleteSlotTarget] = useState<string | null>(null);
 
   async function handleCancelBooking(id: string) {
     try {
@@ -149,29 +166,70 @@ export default function SchedulePage() {
     e.preventDefault();
     setSubmitting(true);
     const fd = new FormData(e.currentTarget);
-    const data = {
-      dayOfWeek: parseInt(fd.get("dayOfWeek") as string),
-      startTime: fd.get("startTime"),
-      endTime: fd.get("endTime"),
-      capacity: parseInt(fd.get("capacity") as string) || 10,
-    };
+    const capacity = parseInt(fd.get("capacity") as string) || 10;
     try {
       const url = editing ? `/api/schedule/slots/${editing.id}` : "/api/schedule/slots";
       const method = editing ? "PATCH" : "POST";
-      const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
+      const payload = editing
+        ? { dayOfWeek: parseInt(fd.get("dayOfWeek") as string), startTime, endTime, capacity }
+        : { days: selectedDays, startTime, endTime, capacity };
+      const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       if (res.ok) {
-        toast.success(editing ? "Horario actualizado" : "Horario creado");
+        if (editing) {
+          toast.success("Horario actualizado");
+        } else {
+          const data = await res.json().catch(() => null);
+          if (data && data.created === 0 && data.skipped > 0) {
+            toast.warning("Esos horarios ya existen");
+          } else if (data && data.skipped > 0) {
+            toast.success(`Se crearon ${data.created} bloque${data.created !== 1 ? "s" : ""} (${data.skipped} ya existían)`);
+          } else {
+            toast.success(`${selectedDays.length} bloque${selectedDays.length !== 1 ? "s" : ""} creado${selectedDays.length !== 1 ? "s" : ""}`);
+          }
+        }
         setShowForm(false);
         setEditing(null);
         load();
       } else {
-        toast.error("Error al guardar");
+        const err = await res.json().catch(() => ({}));
+        toast.error(err.error || "Error al guardar");
       }
     } catch {
       toast.error("Error al guardar");
     } finally {
       setSubmitting(false);
     }
+  }
+
+  function openNewForm() {
+    setEditing(null);
+    setSelectedDays([1]);
+    setStartTime("06:00");
+    setEndTime("07:00");
+    setShowForm(true);
+  }
+
+  function openEditForm(slot: any) {
+    setEditing(slot);
+    setSelectedDays([slot.dayOfWeek]);
+    setStartTime(slot.startTime || "06:00");
+    setEndTime(slot.endTime || "07:00");
+    setShowForm(true);
+  }
+
+  async function handleDeleteSlot(id: string) {
+    try {
+      const res = await fetch(`/api/schedule/slots/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        toast.success("Horario eliminado");
+        load();
+      } else {
+        toast.error("Error al eliminar");
+      }
+    } catch {
+      toast.error("Error al eliminar");
+    }
+    setDeleteSlotTarget(null);
   }
 
   return (
@@ -184,7 +242,7 @@ export default function SchedulePage() {
             {Object.keys(bookingsByDate).length} días con reservas este mes
           </p>
         </div>
-        <button onClick={() => { setEditing(null); setShowForm(true); }}
+        <button onClick={openNewForm}
           className="inline-flex items-center gap-2 bg-primary text-primary-foreground border-none rounded-[10px] px-[17px] py-[11px] text-[14px] font-bold cursor-pointer shadow-lg shadow-primary/20 hover:bg-primary/90 transition"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
@@ -192,6 +250,65 @@ export default function SchedulePage() {
           </svg>
           Nuevo horario
         </button>
+      </div>
+
+      {/* Fixed weekly schedule */}
+      <div className="bg-card border border-border rounded-2xl mb-4 overflow-hidden">
+        <div className="flex items-center justify-between px-4 md:px-5 py-3.5 border-b border-border">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-[9px] bg-primary/10 flex items-center justify-center">
+              <Clock className="size-4 text-primary" />
+            </div>
+            <div>
+              <div className="text-[14px] font-extrabold text-foreground">Horario fijo semanal</div>
+              <div className="text-[11px] text-muted-foreground">
+                {slots.length} bloque{slots.length !== 1 ? "s" : ""} definido{slots.length !== 1 ? "s" : ""} — se repiten todas las semanas
+              </div>
+            </div>
+          </div>
+          <button onClick={openNewForm}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-[9px] bg-primary text-primary-foreground text-[12.5px] font-bold border-none cursor-pointer hover:bg-primary/90 transition">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round">
+              <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Agregar
+          </button>
+        </div>
+        <div className="overflow-x-auto">
+          <div className="min-w-[640px] grid grid-cols-7 divide-x divide-border">
+            {dayNamesShort.map((dn, i) => {
+              const daySlots = slots.filter((s) => s.dayOfWeek === i).sort((a, b) => a.startTime.localeCompare(b.startTime));
+              return (
+                <div key={i} className="p-2.5">
+                  <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider text-center mb-1.5">{dn}</div>
+                  {daySlots.length === 0 ? (
+                    <div className="text-[10px] text-muted-foreground/40 text-center py-3">—</div>
+                  ) : (
+                    <div className="space-y-1.5">
+                      {daySlots.map((s) => (
+                        <div key={s.id} className="group relative rounded-[8px] bg-primary/10 px-2 py-2 text-center transition hover:bg-primary/15">
+                          <div className="text-[11.5px] font-extrabold text-primary leading-none">{fmtTime(s.startTime)}</div>
+                          <div className="text-[9.5px] text-primary/70 mt-0.5 leading-none">a {fmtTime(s.endTime)}</div>
+                          <div className="text-[9.5px] text-primary/70 mt-0.5">Cupo {s.capacity}</div>
+                          <div className="absolute top-1 right-1 hidden group-hover:flex gap-0.5">
+                            <button onClick={(e) => { e.stopPropagation(); openEditForm(s); }}
+                              className="size-5 rounded-md bg-card border border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition cursor-pointer" title="Editar">
+                              <Pencil className="size-2.5" />
+                            </button>
+                            <button onClick={(e) => { e.stopPropagation(); setDeleteSlotTarget(s.id); }}
+                              className="size-5 rounded-md bg-card border border-border flex items-center justify-center text-red-500 hover:text-red-600 transition cursor-pointer" title="Eliminar">
+                              <Trash2 className="size-2.5" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       {/* Month navigation */}
@@ -538,27 +655,71 @@ export default function SchedulePage() {
       {/* Slot form slide-over */}
       <SlideOver open={showForm} onClose={() => { setShowForm(false); setEditing(null); }}
         title={editing ? "Editar horario" : "Nuevo horario"}
-        description={editing ? `Día ${editing.dayOfWeek} — ${fmtTime(editing.startTime)}` : "Agregá un bloque de horario"}
+        description={editing ? `Día ${dayNamesShort[editing.dayOfWeek]} — ${fmtTime(editing.startTime)}` : "Creá bloques para uno o varios días a la vez"}
       >
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
           <div className="flex-1 overflow-y-auto px-[26px] py-[22px] space-y-[16px]">
-            <div>
-              <label className="block text-[12.5px] font-bold text-muted-foreground mb-[7px]">Día de la semana</label>
-              <select name="dayOfWeek" defaultValue={editing?.dayOfWeek ?? 0}
-                className="w-full px-[13px] py-[11px] border border-input rounded-[10px] text-[14px] font-semibold font-sans text-foreground bg-background cursor-pointer focus:outline-none focus:border-primary transition">
-                {dayNamesShort.map((d, i) => <option key={i} value={i}>{d}</option>)}
-              </select>
-            </div>
-            <div className="grid grid-cols-2 gap-[14px]">
+            {editing ? (
               <div>
-                <label className="block text-[12.5px] font-bold text-muted-foreground mb-[7px]">Inicio</label>
-                <input name="startTime" type="time" defaultValue={editing?.startTime || "06:00"}
-                  className="w-full px-[13px] py-[11px] border border-input rounded-[10px] text-[14px] font-sans text-foreground bg-background focus:outline-none focus:border-primary transition" />
+                <label className="block text-[12.5px] font-bold text-muted-foreground mb-[7px]">Día de la semana</label>
+                <select name="dayOfWeek" defaultValue={editing.dayOfWeek}
+                  className="w-full px-[13px] py-[11px] border border-input rounded-[10px] text-[14px] font-semibold font-sans text-foreground bg-background cursor-pointer focus:outline-none focus:border-primary transition">
+                  {dayNamesShort.map((d, i) => <option key={i} value={i}>{d}</option>)}
+                </select>
               </div>
+            ) : (
               <div>
-                <label className="block text-[12.5px] font-bold text-muted-foreground mb-[7px]">Fin</label>
-                <input name="endTime" type="time" defaultValue={editing?.endTime || "07:00"}
-                  className="w-full px-[13px] py-[11px] border border-input rounded-[10px] text-[14px] font-sans text-foreground bg-background focus:outline-none focus:border-primary transition" />
+                <label className="block text-[12.5px] font-bold text-muted-foreground mb-[7px]">Días de la semana</label>
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {dayPresets.map((p) => {
+                    const isActive = selectedDays.length === p.days.length && p.days.every((d) => selectedDays.includes(d));
+                    return (
+                      <button key={p.label} type="button" onClick={() => setSelectedDays(p.days)}
+                        className={`px-2.5 py-1.5 rounded-[8px] text-[11.5px] font-bold border transition cursor-pointer ${
+                          isActive ? "bg-primary text-primary-foreground border-primary" : "bg-background text-muted-foreground border-border hover:border-primary/50 hover:text-foreground"
+                        }`}>
+                        {p.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="grid grid-cols-7 gap-1.5">
+                  {dayNamesShort.map((d, i) => {
+                    const isActive = selectedDays.includes(i);
+                    return (
+                      <button key={i} type="button"
+                        onClick={() => setSelectedDays((prev) => (isActive ? prev.filter((x) => x !== i) : [...prev, i].sort((a, b) => a - b)))}
+                        className={`py-2.5 rounded-[9px] text-[12.5px] font-bold border transition cursor-pointer ${
+                          isActive ? "bg-primary text-primary-foreground border-primary" : "bg-background text-muted-foreground border-border hover:border-primary/50 hover:text-foreground"
+                        }`}>
+                        {d}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+            <div>
+              <label className="block text-[12.5px] font-bold text-muted-foreground mb-[7px]">Horario</label>
+              <div className="flex items-center gap-2">
+                <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)}
+                  className="flex-1 px-[13px] py-[11px] border border-input rounded-[10px] text-[14px] font-sans text-foreground bg-background focus:outline-none focus:border-primary transition" />
+                <span className="text-[13px] font-bold text-muted-foreground">a</span>
+                <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)}
+                  className="flex-1 px-[13px] py-[11px] border border-input rounded-[10px] text-[14px] font-sans text-foreground bg-background focus:outline-none focus:border-primary transition" />
+              </div>
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {timePresets.map((p) => {
+                  const isActive = startTime === p.start && endTime === p.end;
+                  return (
+                    <button key={p.label} type="button" onClick={() => { setStartTime(p.start); setEndTime(p.end); }}
+                      className={`px-2.5 py-1.5 rounded-[8px] text-[11.5px] font-bold border transition cursor-pointer ${
+                        isActive ? "bg-primary text-primary-foreground border-primary" : "bg-background text-muted-foreground border-border hover:border-primary/50 hover:text-foreground"
+                      }`}>
+                      {p.label} · {p.start.slice(0, 5)}-{p.end.slice(0, 5)}
+                    </button>
+                  );
+                })}
               </div>
             </div>
             <div>
@@ -566,11 +727,17 @@ export default function SchedulePage() {
               <input name="capacity" type="number" defaultValue={editing?.capacity || 10} min="1"
                 className="w-full px-[13px] py-[11px] border border-input rounded-[10px] text-[14px] font-sans text-foreground bg-background focus:outline-none focus:border-primary transition" />
             </div>
+            {!editing && selectedDays.length > 0 && (
+              <div className="rounded-[10px] bg-primary/5 border border-primary/15 px-3 py-2.5 text-[12.5px] font-semibold text-foreground">
+                Se crearán <span className="text-primary font-extrabold">{selectedDays.length} bloque{selectedDays.length !== 1 ? "s" : ""}</span>:{" "}
+                {selectedDays.map((i) => dayNamesShort[i]).join(", ")} · {fmtTime(startTime)} — {fmtTime(endTime)}
+              </div>
+            )}
           </div>
           <div className="flex gap-3 px-[26px] py-[18px] border-t border-border shrink-0">
             <button type="button" onClick={() => { setShowForm(false); setEditing(null); }}
               className="flex-1 py-[12px] border border-input rounded-[10px] text-[14px] font-bold font-sans bg-background text-muted-foreground cursor-pointer hover:bg-muted/50 transition">Cancelar</button>
-            <button type="submit" disabled={submitting}
+            <button type="submit" disabled={submitting || (!editing && selectedDays.length === 0)}
               className="flex-[2] py-[12px] border-none rounded-[10px] text-[14px] font-bold font-sans bg-primary text-primary-foreground cursor-pointer shadow-lg shadow-primary/20 hover:bg-primary/90 transition disabled:opacity-50">
               {submitting ? "Guardando..." : editing ? "Actualizar" : "Crear horario"}
             </button>
@@ -584,6 +751,15 @@ export default function SchedulePage() {
         onConfirm={() => { if (cancelTarget) handleCancelBooking(cancelTarget); }}
         title="Cancelar reserva"
         message="¿Cancelar esta reserva? El cliente será notificado."
+        variant="danger"
+      />
+
+      <ConfirmModal
+        open={!!deleteSlotTarget}
+        onClose={() => setDeleteSlotTarget(null)}
+        onConfirm={() => { if (deleteSlotTarget) handleDeleteSlot(deleteSlotTarget); }}
+        title="Eliminar horario"
+        message="¿Eliminar este bloque del horario semanal? Los clientes ya no podrán reservar en ese horario."
         variant="danger"
       />
     </div>
