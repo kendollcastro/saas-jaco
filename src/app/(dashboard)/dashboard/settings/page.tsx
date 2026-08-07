@@ -12,6 +12,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
+import { applyDashboardTheme } from "@/components/theme-applier";
 
 export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
@@ -43,29 +44,8 @@ export default function SettingsPage() {
   const [modulesOpen, setModulesOpen] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  function hexToRgb(hex: string) {
-    const c = hex.replace("#", "");
-    return { r: parseInt(c.slice(0, 2), 16), g: parseInt(c.slice(2, 4), 16), b: parseInt(c.slice(4, 6), 16) };
-  }
-  function darken(hex: string, amount: number) {
-    const { r, g, b } = hexToRgb(hex);
-    const f = (v: number) => Math.round(v * (1 - amount));
-    return `rgb(${f(r)}, ${f(g)}, ${f(b)})`;
-  }
   function previewTheme(presetKey: string, color: string) {
-    const root = document.documentElement;
-    root.style.setProperty("--color-primary", color);
-    root.style.setProperty("--color-ring", color);
-    root.style.setProperty("--color-chart-1", color);
-    root.style.setProperty("--primary", color);
-    root.style.setProperty("--ring", color);
-    root.style.setProperty("--chart-1", color);
-    root.style.setProperty("--sidebar-primary", color);
-    root.style.setProperty("--sidebar-primary-foreground", "#ffffff");
-    root.style.setProperty("--sidebar", darken(color, 0.85));
-    root.style.setProperty("--sidebar-foreground", "#ffffff");
-    root.style.setProperty("--sidebar-accent", "rgba(255, 255, 255, 0.08)");
-    root.style.setProperty("--sidebar-border", "rgba(255, 255, 255, 0.06)");
+    applyDashboardTheme(presetKey, color, form.logoUrl);
   }
 
   function handleLogoFile(file: File) {

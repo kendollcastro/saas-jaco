@@ -21,9 +21,9 @@ function darken(hex: string, amount: number) {
   return `rgb(${f(r)}, ${f(g)}, ${f(b)})`;
 }
 
-function applyTheme(preset: string, customColor?: string, logoUrl?: string) {
+function applyThemeTo(target: HTMLElement | null, preset: string, customColor?: string, logoUrl?: string) {
   const primary = preset && themePresets[preset] ? themePresets[preset].primary : (customColor || "#1e40af");
-  const root = document.documentElement;
+  const root = target || document.documentElement;
   root.style.setProperty("--color-primary", primary);
   root.style.setProperty("--color-ring", primary);
   root.style.setProperty("--color-chart-1", primary);
@@ -47,6 +47,14 @@ function applyTheme(preset: string, customColor?: string, logoUrl?: string) {
       if (img) img.src = logoUrl;
     }
   }
+}
+
+export function applyDashboardTheme(preset: string, customColor?: string, logoUrl?: string) {
+  applyThemeTo(document.getElementById("theme-root"), preset, customColor, logoUrl);
+}
+
+function applyTheme(preset: string, customColor?: string, logoUrl?: string) {
+  applyThemeTo(document.documentElement, preset, customColor, logoUrl);
 }
 
 export default function ThemeApplier({

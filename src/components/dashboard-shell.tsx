@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Toaster } from "sonner";
 import { ThemeProvider, useTheme } from "next-themes";
 import { motion } from "framer-motion";
-import ThemeApplier from "@/components/theme-applier";
+import ThemeApplier, { applyDashboardTheme } from "@/components/theme-applier";
 import OnboardingWizard from "@/components/onboarding-wizard";
 import {
   LayoutDashboard,
@@ -149,6 +149,7 @@ export default function DashboardShell({
         if (d.modules) {
           setActiveModules(d.modules.filter((m: any) => m.active).map((m: any) => m.key));
         }
+        applyDashboardTheme(d.themePreset || "default", d.colorPrimary, d.logoUrl);
       })
       .catch(() => {});
   }
@@ -339,7 +340,7 @@ export default function DashboardShell({
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
     <ThemeApplier themePreset={initial.themePreset} colorPrimary={initial.colorPrimary} logoUrl={initial.logoUrl} />
-    <div style={themeVars}>
+    <div id="theme-root" style={themeVars}>
     {onboarding?.needsOnboarding && (
       <OnboardingWizard
         progress={onboarding.progress}
