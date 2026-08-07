@@ -20,6 +20,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (body.description !== undefined) data.description = body.description;
     if (body.price !== undefined) data.price = Number(body.price);
     if (body.durationDays !== undefined) data.durationDays = Number(body.durationDays);
+    if (body.sessionsPerWeek !== undefined)
+      data.sessionsPerWeek = body.sessionsPerWeek != null && Number(body.sessionsPerWeek) > 0 ? Number(body.sessionsPerWeek) : null;
     if (body.active !== undefined) data.active = body.active;
 
     const updated = await prisma.membershipPlan.update({ where: { id }, data });

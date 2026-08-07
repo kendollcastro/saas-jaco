@@ -20,7 +20,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { name, description, price, durationDays } = body;
+    const { name, description, price, durationDays, sessionsPerWeek } = body;
 
     if (!name) return NextResponse.json({ error: "Nombre requerido" }, { status: 400 });
 
@@ -31,6 +31,7 @@ export async function POST(request: Request) {
         description: description || null,
         price: Number(price) || 0,
         durationDays: Number(durationDays) || 30,
+        sessionsPerWeek: sessionsPerWeek != null && Number(sessionsPerWeek) > 0 ? Number(sessionsPerWeek) : null,
       },
     });
 

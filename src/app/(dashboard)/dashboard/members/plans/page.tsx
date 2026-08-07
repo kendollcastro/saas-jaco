@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { Plus, X, Tag, DollarSign, Clock, Power, PowerOff, Pencil, Trash2 } from "lucide-react";
+import { Plus, X, Tag, DollarSign, Clock, CalendarDays, Power, PowerOff, Pencil, Trash2 } from "lucide-react";
 import ConfirmModal from "@/components/confirm-modal";
 
 interface Plan {
@@ -11,6 +11,7 @@ interface Plan {
   description: string | null;
   price: number;
   durationDays: number;
+  sessionsPerWeek: number | null;
   active: boolean;
 }
 
@@ -22,7 +23,7 @@ export default function PlansPage() {
   const [submitting, setSubmitting] = useState(false);
   const [confirmAction, setConfirmAction] = useState<{ plan: Plan; action: "toggle" | "delete" } | null>(null);
 
-  const [form, setForm] = useState({ name: "", description: "", price: "", durationDays: "30" });
+  const [form, setForm] = useState({ name: "", description: "", price: "", durationDays: "30", sessionsPerWeek: "" });
 
   function load() {
     setLoading(true);
@@ -37,13 +38,13 @@ export default function PlansPage() {
 
   function openCreate() {
     setEditing(null);
-    setForm({ name: "", description: "", price: "", durationDays: "30" });
+    setForm({ name: "", description: "", price: "", durationDays: "30", sessionsPerWeek: "" });
     setShowForm(true);
   }
 
   function openEdit(plan: Plan) {
     setEditing(plan);
-    setForm({ name: plan.name, description: plan.description || "", price: String(plan.price), durationDays: String(plan.durationDays) });
+    setForm({ name: plan.name, description: plan.description || "", price: String(plan.price), durationDays: String(plan.durationDays), sessionsPerWeek: plan.sessionsPerWeek ? String(plan.sessionsPerWeek) : "" });
     setShowForm(true);
   }
 
@@ -64,6 +65,7 @@ export default function PlansPage() {
           description: form.description.trim() || null,
           price: Number(form.price) || 0,
           durationDays: Number(form.durationDays) || 30,
+          sessionsPerWeek: form.sessionsPerWeek ? Number(form.sessionsPerWeek) : null,
         }),
       });
 
@@ -194,6 +196,20 @@ export default function PlansPage() {
                   />
                 </div>
               </div>
+              <div>
+                <label className="block text-[12.5px] font-bold text-muted-foreground mb-[7px] flex items-center gap-1.5">
+                  <CalendarDays className="size-[14px]" /> Clases por semana (opcional)
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  value={form.sessionsPerWeek}
+                  onChange={(e) => setForm((p) => ({ ...p, sessionsPerWeek: e.target.value }))}
+                  placeholder="Ej: 3 (vacío = ilimitado)"
+                  className="w-full px-[13px] py-[11px] border border-input rounded-[10px] text-[14px] bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
+                />
+                <p className="text-[11.5px] text-muted-foreground mt-[6px]">Los socios solo podrán reservar esta cantidad de clases por semana en el portal.</p>
+              </div>
               <button
                 type="submit"
                 disabled={submitting}
@@ -302,6 +318,11 @@ export default function PlansPage() {
                 <span className="text-muted-foreground">
                   {plan.durationDays} días
                 </span>
+                {plan.sessionsPerWeek ? (
+                  <span className="text-muted-foreground">{plan.sessionsPerWeek} clases/sem</span>
+                ) : (
+                  <span className="text-muted-foreground">Ilimitado</span>
+                )}
               </div>
             </div>
           ))}
