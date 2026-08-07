@@ -44,31 +44,33 @@ export async function POST(request: Request, { params }: { params: Promise<{ tok
 
   const { method, receiptUrl, sinpeRef } = body;
 
-  const payment = await prisma.$transaction(async (tx) => {
-    const p = await tx.memberPayment.create({
-      data: {
-        tenantId: link.tenantId,
-        memberId: link.memberId,
-        amount: link.amount,
-        method: method || "sinpe",
-        notes: link.concept,
-        receiptUrl: receiptUrl || null,
-        sinpeRef: sinpeRef || null,
-        periodTo: new Date(),
-      },
-    });
+  const payment = await prisma.memberPayment.create({
+    data: {
+      tenantId: link.tenantId,
+      memberId: link.memberId,
+      amount: link.amount,
+      method: method || "sinpe",
+      notes: link.concept,
+      receiptUrl: receiptUrl || null,
+      sinpeRef: sinpeRef || null,
+      periodTo: new Date(),
+    },
+  });
 
-    await tx.paymentLink.update({
+  try {
+    await prisma.paymentLink.update({
       where: { id: link.id },
       data: {
         status: "completed",
         completedAt: new Date(),
-        memberPaymentId: p.id,
+        memberPaymentId: payment.id,
       },
     });
-
-    return p;
-  });
+  } catch (e) {
+    // Roll back the payment so a failed link update can't leave orphan data
+    await prisma.memberPayment.delete({ where: { id: payment.id } }).catch(() => {});
+    throw e;
+  }
 
   return NextResponse.json({ success: true, paymentId: payment.id });
 }

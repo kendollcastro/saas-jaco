@@ -56,11 +56,12 @@ export async function POST(request: Request) {
     });
   }
 
-  // Create sale + deduct stock atomically so a retry can't duplicate the sale
+  // Create sale + deduct stock atomically so a retry can't duplicate the sale.
+  // Uses a batch transaction (compatible with Supabase transaction pooling).
   let sale;
   try {
-    sale = await prisma.$transaction(async (tx) => {
-      const created = await tx.sale.create({
+    const [created, ...stockResults] = await prisma.$transaction([
+      prisma.sale.create({
         data: {
           tenantId: apiUser.tenantId,
           memberId: body.memberId || null,
@@ -70,21 +71,27 @@ export async function POST(request: Request) {
           items: { create: saleItems },
         },
         include: { items: true, member: true },
-      });
-
+      }),
       // Deduct stock conditionally (idempotent guard against concurrent oversell)
-      for (const item of body.items) {
-        const res = await tx.product.updateMany({
+      ...body.items.map((item: { productId: string; quantity: number }) =>
+        prisma.product.updateMany({
           where: { id: item.productId, tenantId: apiUser.tenantId, stock: { gte: item.quantity } },
           data: { stock: { decrement: item.quantity } },
-        });
-        if (res.count === 0) {
-          throw new Error(`Stock insuficiente para ${item.productName}`);
-        }
-      }
+        })
+      ),
+    ]);
 
-      return created;
-    });
+    // If any stock deduction failed (0 rows matched), roll back the sale
+    const failed = body.items.findIndex((item: { productName: string }, i: number) => stockResults[i]?.count === 0);
+    if (failed !== -1) {
+      await prisma.sale.delete({ where: { id: created.id } });
+      return NextResponse.json(
+        { error: `Stock insuficiente para ${body.items[failed].productName}` },
+        { status: 400 }
+      );
+    }
+
+    sale = created;
   } catch (e) {
     const msg = e instanceof Error ? e.message : "";
     if (msg.startsWith("Stock insuficiente")) {

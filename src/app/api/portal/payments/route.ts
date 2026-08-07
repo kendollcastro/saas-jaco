@@ -30,8 +30,8 @@ export async function POST(request: Request) {
   const newEnd = new Date(currentEnd);
   newEnd.setMonth(newEnd.getMonth() + months);
 
-  const payment = await prisma.$transaction(async (tx) => {
-    const p = await tx.memberPayment.create({
+  const [payment] = await prisma.$transaction([
+    prisma.memberPayment.create({
       data: {
         tenantId: member.tenantId,
         memberId: member.id,
@@ -43,19 +43,16 @@ export async function POST(request: Request) {
         periodFrom: paidDate,
         periodTo: newEnd,
       },
-    });
-
-    await tx.member.update({
+    }),
+    prisma.member.update({
       where: { id: member.id },
       data: {
         endDate: newEnd,
         status: "active",
         startDate: member.status === "pending" ? paidDate : member.startDate,
       },
-    });
-
-    return p;
-  });
+    }),
+  ]);
 
   return NextResponse.json(payment, { status: 201 });
 }
