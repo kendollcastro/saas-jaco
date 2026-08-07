@@ -1,9 +1,33 @@
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { getApiUser } from "@/lib/api-auth";
 import { syncUser } from "@/lib/auth";
+import { getTenantBranding } from "@/lib/tenant-brand";
 import DashboardShell, { DashboardSettings } from "@/components/dashboard-shell";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  let apiUser = null;
+  try {
+    apiUser = await getApiUser();
+  } catch {
+    apiUser = null;
+  }
+
+  if (!apiUser) {
+    return { title: "Ola Saas" };
+  }
+
+  const branding = await getTenantBranding(apiUser.tenantId);
+  return {
+    title: branding.businessName || "Ola Saas",
+    icons: {
+      icon: "/api/tenant-icon",
+      shortcut: "/api/tenant-icon",
+    },
+  };
+}
 
 const emptyInitial: DashboardSettings = {
   businessName: "",

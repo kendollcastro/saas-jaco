@@ -1,14 +1,18 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useRouter, usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Toaster } from "sonner";
 import { ThemeProvider, useTheme } from "next-themes";
-import { motion } from "framer-motion";
 import ThemeApplier, { applyDashboardTheme } from "@/components/theme-applier";
-import OnboardingWizard from "@/components/onboarding-wizard";
+
+const OnboardingWizard = dynamic(
+  () => import("@/components/onboarding-wizard"),
+  { ssr: false }
+);
 import {
   LayoutDashboard,
   Calendar,
@@ -114,6 +118,7 @@ export default function DashboardShell({
   const [bookingNavLabel, setBookingNavLabel] = useState(initial.bookingNavLabel);
   const [maintenance] = useState<{ enabled: boolean; message: string } | null>(initial.maintenance);
   const [onboarding, setOnboarding] = useState<{ needsOnboarding: boolean; progress: any } | null>(initial.onboarding);
+  const lastLogoRef = useRef(initial.logoUrl);
 
   const primary = themePresets[initial.themePreset] || initial.colorPrimary || "#1e40af";
   const themeVars = useMemo(
@@ -150,8 +155,22 @@ export default function DashboardShell({
           setActiveModules(d.modules.filter((m: any) => m.active).map((m: any) => m.key));
         }
         applyDashboardTheme(d.themePreset || "default", d.colorPrimary, d.logoUrl);
+        if (d.businessName) document.title = d.businessName;
+        if (d.logoUrl && d.logoUrl !== lastLogoRef.current) {
+          lastLogoRef.current = d.logoUrl;
+          refreshFavicon();
+        }
       })
       .catch(() => {});
+  }
+
+  function refreshFavicon() {
+    document.querySelectorAll('link[rel="icon"], link[rel="shortcut icon"]').forEach((el) => {
+      const href = (el as HTMLLinkElement).getAttribute("href") || "";
+      if (href.startsWith("/api/tenant-icon")) {
+        (el as HTMLLinkElement).setAttribute("href", `/api/tenant-icon?v=${Date.now()}`);
+      }
+    });
   }
 
   // Fetch notification badge count and business info
@@ -194,11 +213,9 @@ export default function DashboardShell({
     useEffect(() => setMounted(true), []);
     if (!mounted) return <div className="w-[34px] h-[34px]" />;
     return (
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
+      <button
         onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-        className={`flex items-center justify-center rounded-[9px] transition ${sidebarCollapsed ? "w-[34px] h-[34px]" : "w-[34px] h-[34px]"}`}
+        className="flex items-center justify-center w-[34px] h-[34px] rounded-[9px] transition-transform hover:scale-105 active:scale-95"
         title={theme === "dark" ? "Modo claro" : "Modo oscuro"}
       >
         {theme === "dark" ? (
@@ -206,7 +223,7 @@ export default function DashboardShell({
         ) : (
               <Moon className="size-[16px] text-sidebar-foreground/50 hover:text-sidebar-foreground/80 transition" />
         )}
-      </motion.button>
+      </button>
     );
   }
 
@@ -236,26 +253,21 @@ export default function DashboardShell({
   const sidebarContent = (
     <>
       {/* Logo */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className={`flex items-center ${sidebarCollapsed ? "justify-center pt-5 pb-7" : "gap-3 px-5 pt-6 pb-7"}`}
+      <div
+        className={`flex items-center animate-[jacoUp_0.4s_ease] ${sidebarCollapsed ? "justify-center pt-5 pb-7" : "gap-3 px-5 pt-6 pb-7"}`}
         id="sidebar-logo-text"
       >
         {logoUrl ? (
           <img src={logoUrl} alt="Logo" className="w-9 h-9 rounded-[10px] object-cover flex-shrink-0" />
         ) : (
-          <motion.div
-            whileHover={{ rotate: [0, -10, 10, -5, 0] }}
-            transition={{ duration: 0.5 }}
-            className="w-9 h-9 rounded-[10px] bg-sidebar-primary flex items-center justify-center flex-shrink-0"
+          <div
+            className="w-9 h-9 rounded-[10px] bg-sidebar-primary flex items-center justify-center flex-shrink-0 transition-transform hover:rotate-[10deg]"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round">
               <circle cx="12" cy="9" r="3.4" />
               <path d="M3 19c2.5-3 6-4.5 9-4.5s6.5 1.5 9 4.5" />
             </svg>
-          </motion.div>
+          </div>
         )}
         {!sidebarCollapsed && (
           <div>
@@ -267,7 +279,7 @@ export default function DashboardShell({
             </div>
           </div>
         )}
-      </motion.div>
+      </div>
 
       {!sidebarCollapsed && (
         <div className="text-[10.5px] font-bold text-sidebar-foreground/30 uppercase tracking-widest px-[18px] pb-[10px]">Menú</div>
@@ -277,11 +289,9 @@ export default function DashboardShell({
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           return (
-            <motion.div
+            <div
               key={item.href}
-              whileHover={{ x: 3 }}
-              whileTap={{ scale: 0.97 }}
-              transition={{ type: "spring", stiffness: 400, damping: 25 }}
+              className="transition-transform hover:translate-x-[3px] active:scale-[0.97]"
             >
               <Link
                 href={item.href}
@@ -303,7 +313,7 @@ export default function DashboardShell({
                 </div>
                 {!sidebarCollapsed && <span>{item.label}</span>}
               </Link>
-            </motion.div>
+            </div>
           );
         })}
       </nav>
@@ -321,15 +331,13 @@ export default function DashboardShell({
                 <div className="text-[11px] text-sidebar-foreground/45">Administrador</div>
               </div>
               <ThemeToggle />
-              <motion.button
+              <button
                 onClick={handleLogout}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="text-sidebar-foreground/50 hover:text-sidebar-foreground/80 transition flex-shrink-0"
+                className="text-sidebar-foreground/50 hover:text-sidebar-foreground/80 transition-transform hover:scale-105 active:scale-95 flex-shrink-0"
                 title="Cerrar sesión"
               >
                 <LogOut className="size-4" />
-              </motion.button>
+              </button>
             </>
           )}
         </div>
