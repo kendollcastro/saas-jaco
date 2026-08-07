@@ -18,6 +18,10 @@ function validateOrigin(request: NextRequest): boolean {
 
   try {
     const parsed = new URL(value);
+    // Allow the app's own host on any configured domain (Vercel/custom/…) so
+    // same-origin mutating requests from production are never rejected.
+    const self = new URL(request.url);
+    if (parsed.hostname === self.hostname && parsed.port === self.port) return true;
     return ALLOWED_ORIGINS.some((a) => {
       if (!a) return false;
       const allowed = new URL(a);
