@@ -60,6 +60,7 @@ export async function GET() {
     logoUrl: settings?.logoUrl || "",
     themePreset: settings?.themePreset || "default",
     bookingNavLabel: settings?.bookingNavLabel || null,
+    advanceNoticeHours: settings?.advanceNoticeHours ?? 2,
     modules: modules.map((m) => ({
       key: m.module.key,
       name: m.module.name,
@@ -96,6 +97,7 @@ export async function PUT(request: Request) {
       logoUrl: body.logoUrl || null,
       themePreset: body.themePreset || "default",
       bookingNavLabel: body.bookingNavLabel || null,
+      advanceNoticeHours: body.advanceNoticeHours != null ? Number(body.advanceNoticeHours) : 2,
     };
 
     await prisma.tenantSetting.upsert({

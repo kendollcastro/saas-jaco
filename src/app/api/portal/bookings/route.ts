@@ -53,6 +53,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "La fecha no corresponde al día del horario seleccionado" }, { status: 400 });
   }
 
+  const settings = await prisma.tenantSetting.findUnique({ where: { tenantId: member.tenantId } });
+  const advanceHours = settings?.advanceNoticeHours ?? 0;
+  if (advanceHours > 0) {
+    const classStart = new Date(`${targetDate.toISOString().slice(0, 10)}T${slot.startTime}:00Z`);
+    const minTime = Date.now() + advanceHours * 60 * 60 * 1000;
+    if (classStart.getTime() < minTime) {
+      const label = advanceHours === 1 ? "1 hora" : `${advanceHours} horas`;
+      return NextResponse.json({ error: `Debés reservar con al menos ${label} de antelación.` }, { status: 400 });
+    }
+  }
+
   const memberWithPlan = await prisma.member.findUnique({
     where: { id: member.id },
     include: { plan: true },

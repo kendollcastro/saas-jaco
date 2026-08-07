@@ -38,6 +38,7 @@ export default function SettingsPage() {
     logoUrl: "",
     themePreset: "default",
     bookingNavLabel: "",
+    advanceNoticeHours: "2",
   });
   const [modules, setModules] = useState<{ key: string; name: string; active: boolean }[]>([]);
   const [dragOver, setDragOver] = useState(false);
@@ -94,6 +95,7 @@ export default function SettingsPage() {
         logoUrl: data.logoUrl || "",
         themePreset: data.themePreset || "default",
         bookingNavLabel: data.bookingNavLabel || "",
+        advanceNoticeHours: data.advanceNoticeHours != null ? String(data.advanceNoticeHours) : "2",
         });
         setModules(data.modules || []);
       })
@@ -334,6 +336,8 @@ export default function SettingsPage() {
               </div>
 
               <Field label="Etiqueta del menú de reservas" value={form.bookingNavLabel} onChange={(v) => set("bookingNavLabel", v)} placeholder="Ej: Horario, Citas, Clases" />
+              <Field label="Antelación mínima para reservar (horas)" value={form.advanceNoticeHours} onChange={(v) => set("advanceNoticeHours", v)} type="number" placeholder="Ej: 2" />
+              <p className="text-[11.5px] text-muted-foreground -mt-1">Cuántas horas antes de la clase los socios deben reservar (0 = sin límite).</p>
             </div>
           </section>
 

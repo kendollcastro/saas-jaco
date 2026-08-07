@@ -20,12 +20,13 @@ export default function BookPage() {
 
   useEffect(() => {
     if (!token) { router.replace("/portal/login"); return; }
-    fetch("/api/portal/slots")
+    setLoading(true);
+    fetch(`/api/portal/slots?date=${bookingDate}`)
       .then((r) => r.json())
       .then((data) => { if (Array.isArray(data)) setSlots(data); })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [token, router]);
+  }, [token, router, bookingDate]);
 
   const daySlots = useMemo(() =>
     slots.filter((s) => s.dayOfWeek === selectedDay && s.active).sort((a, b) => a.startTime.localeCompare(b.startTime)),
@@ -122,7 +123,12 @@ export default function BookPage() {
       {/* Date */}
       <div>
         <label className="block text-[12px] font-bold text-muted-foreground mb-1.5">Fecha</label>
-        <input type="date" value={bookingDate} onChange={(e) => setBookingDate(e.target.value)}
+        <input type="date" value={bookingDate} onChange={(e) => {
+          setBookingDate(e.target.value);
+          const d = parseDateInput(e.target.value);
+          setSelectedDay(d.getDay());
+          setSelectedSlot(null);
+        }}
           className="w-full px-4 py-3.5 border border-input rounded-xl text-[14px] font-sans text-foreground bg-background focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition" />
       </div>
 
@@ -151,14 +157,19 @@ export default function BookPage() {
           >
             {daySlots.map((slot) => {
               const isSelected = selectedSlot === slot.id;
+              const remaining = (slot.capacity ?? 0) - (slot.bookedCount ?? 0);
+              const isFull = remaining <= 0;
               return (
                 <button
                   key={slot.id}
-                  onClick={() => setSelectedSlot(slot.id)}
+                  onClick={() => !isFull && setSelectedSlot(slot.id)}
+                  disabled={isFull}
                   className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 text-left transition-all cursor-pointer ${
                     isSelected
                       ? "border-primary bg-primary/5 dark:bg-primary/10 shadow-lg shadow-primary/10"
-                      : "border-border/50 bg-card/50 dark:bg-card/30 hover:border-primary/40 hover:shadow-md"
+                      : isFull
+                        ? "border-border/30 bg-muted/40 dark:bg-muted/20 opacity-60 cursor-not-allowed"
+                        : "border-border/50 bg-card/50 dark:bg-card/30 hover:border-primary/40 hover:shadow-md"
                   }`}
                 >
                   <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-blue-500 flex items-center justify-center text-sm font-bold text-white shrink-0 shadow-lg shadow-primary/20">
@@ -168,7 +179,9 @@ export default function BookPage() {
                     <div className="text-[14px] font-bold text-foreground">
                       {fmtTime(slot.startTime)} — {fmtTime(slot.endTime)}
                     </div>
-                    <div className="text-[11px] text-muted-foreground">Cupo: {slot.capacity}</div>
+                    <div className="text-[11px] text-muted-foreground">
+                      {isFull ? "Cupo lleno" : `${remaining} de ${slot.capacity} cupos disponibles`}
+                    </div>
                   </div>
                   {isSelected && (
                       <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
