@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { getApiUser } from "@/lib/api-auth";
+import { syncUser } from "@/lib/auth";
 import DashboardShell, { DashboardSettings } from "@/components/dashboard-shell";
 
 export const dynamic = "force-dynamic";
@@ -25,6 +26,17 @@ export default async function DashboardLayout({
     apiUser = await getApiUser();
   } catch {
     apiUser = null;
+  }
+
+  // Self-heal: session exists but user/tenant not yet created in DB
+  // (e.g. if the email/sync step failed on signup). Ensure the record exists.
+  if (!apiUser) {
+    try {
+      await syncUser();
+      apiUser = await getApiUser();
+    } catch {
+      apiUser = null;
+    }
   }
 
   let initial = emptyInitial;

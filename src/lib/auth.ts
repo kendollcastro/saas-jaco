@@ -53,16 +53,20 @@ export async function syncUser() {
     }
   }
 
-  // Send welcome email on first-time registration
+  // Send welcome email on first-time registration (never block signup on email failure)
   if (isNewTenant) {
-    const html = await render(
-      WelcomeEmail({
-        name,
-        tenantName: tenant!.name,
-        dashboardUrl: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/dashboard`,
-      })
-    );
-    await sendEmail({ to: email, subject: "Bienvenido a Ola Saas", html });
+    try {
+      const html = await render(
+        WelcomeEmail({
+          name,
+          tenantName: tenant!.name,
+          dashboardUrl: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/dashboard`,
+        })
+      );
+      await sendEmail({ to: email, subject: "Bienvenido a Ola Saas", html });
+    } catch (err) {
+      console.error("Welcome email failed (ignored):", err);
+    }
   }
 
   // Create user record
