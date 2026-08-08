@@ -58,14 +58,25 @@ export async function POST(request: Request, { params }: { params: Promise<{ tok
   });
 
   try {
-    await prisma.paymentLink.update({
-      where: { id: link.id },
-      data: {
-        status: "completed",
-        completedAt: new Date(),
-        memberPaymentId: payment.id,
-      },
-    });
+    await prisma.$transaction([
+      prisma.paymentLink.update({
+        where: { id: link.id },
+        data: {
+          status: "completed",
+          completedAt: new Date(),
+          memberPaymentId: payment.id,
+        },
+      }),
+      // If the link was generated for an extra-class booking, confirm it
+      ...(link.scheduleBookingId
+        ? [
+            prisma.scheduleBooking.update({
+              where: { id: link.scheduleBookingId },
+              data: { status: "confirmed" },
+            }),
+          ]
+        : []),
+    ]);
   } catch (e) {
     // Roll back the payment so a failed link update can't leave orphan data
     await prisma.memberPayment.delete({ where: { id: payment.id } }).catch(() => {});

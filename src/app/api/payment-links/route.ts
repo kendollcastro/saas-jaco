@@ -8,7 +8,7 @@ export async function POST(request: Request) {
   if (!apiUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await request.json();
-  const { memberId, amount, concept } = body;
+  const { memberId, amount, concept, scheduleBookingId } = body;
   if (!memberId || !amount) {
     return NextResponse.json({ error: "memberId y amount requeridos" }, { status: 400 });
   }
@@ -17,6 +17,13 @@ export async function POST(request: Request) {
     where: { id: memberId, tenantId: apiUser.tenantId },
   });
   if (!member) return NextResponse.json({ error: "Miembro no encontrado" }, { status: 404 });
+
+  if (scheduleBookingId) {
+    const booking = await prisma.scheduleBooking.findFirst({
+      where: { id: scheduleBookingId, tenantId: apiUser.tenantId },
+    });
+    if (!booking) return NextResponse.json({ error: "Reserva no encontrada" }, { status: 404 });
+  }
 
   const token = crypto.randomBytes(24).toString("hex");
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${process.env.VERCEL_URL || "olasaas.vercel.app"}`;
@@ -29,6 +36,7 @@ export async function POST(request: Request) {
       amount: parseFloat(amount),
       concept: concept || "Pago de membresía",
       status: "pending",
+      scheduleBookingId: scheduleBookingId || null,
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
     },
   });

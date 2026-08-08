@@ -221,6 +221,11 @@ function BookingsSection() {
                 <div className="text-[11px] text-muted-foreground">
                   {d.toLocaleDateString("es-CR", { month: "long", year: "numeric" })}
                 </div>
+                {b.status === "pending" && (
+                  <span className="inline-block mt-1 px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 text-[10px] font-bold">
+                    Pendiente de pago
+                  </span>
+                )}
               </div>
             </div>
           );

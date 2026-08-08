@@ -39,6 +39,7 @@ export default function SettingsPage() {
     themePreset: "default",
     bookingNavLabel: "",
     advanceNoticeHours: "2",
+    extraClassPrice: "3000",
   });
   const [modules, setModules] = useState<{ key: string; name: string; active: boolean }[]>([]);
   const [dragOver, setDragOver] = useState(false);
@@ -96,6 +97,7 @@ export default function SettingsPage() {
         themePreset: data.themePreset || "default",
         bookingNavLabel: data.bookingNavLabel || "",
         advanceNoticeHours: data.advanceNoticeHours != null ? String(data.advanceNoticeHours) : "2",
+        extraClassPrice: data.extraClassPrice != null ? String(data.extraClassPrice) : "3000",
         });
         setModules(data.modules || []);
       })
@@ -338,6 +340,8 @@ export default function SettingsPage() {
               <Field label="Etiqueta del menú de reservas" value={form.bookingNavLabel} onChange={(v) => set("bookingNavLabel", v)} placeholder="Ej: Horario, Citas, Clases" />
               <Field label="Antelación mínima para reservar (horas)" value={form.advanceNoticeHours} onChange={(v) => set("advanceNoticeHours", v)} type="number" placeholder="Ej: 2" />
               <p className="text-[11.5px] text-muted-foreground -mt-1">Cuántas horas antes de la clase los socios deben reservar (0 = sin límite).</p>
+              <Field label="Precio clase extra (₡)" value={form.extraClassPrice} onChange={(v) => set("extraClassPrice", v)} type="number" placeholder="Ej: 3000" />
+              <p className="text-[11.5px] text-muted-foreground -mt-1">Lo que pagan los socios por reservar una clase por encima de su límite semanal.</p>
             </div>
           </section>
 

@@ -6,6 +6,7 @@ import SlideOver from "@/components/slide-over";
 import ConfirmModal from "@/components/confirm-modal";
 import { fmtTime, localDateOnly, utcDateOnly } from "@/lib/utils";
 import { Clock, Pencil, Trash2 } from "lucide-react";
+import CobrarButton from "./cobrar-button";
 
 const dayNamesShort = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 
@@ -425,8 +426,11 @@ export default function SchedulePage() {
                       <div className="flex flex-wrap gap-1.5 ml-[52px]">
                         {slot.bookings.map((b: any) => (
                           <span key={b.id} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-muted text-[12px] font-semibold text-foreground">
-                            <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+                            {b.status === "pending" && (
+                              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" title="Pendiente de pago" />
+                            )}
                             {b.memberName}
+                            {b.status === "pending" && b.memberId && <CobrarButton booking={b} compact />}
                             <button onClick={() => setCancelTarget(b.id)}
                               className="size-4 rounded-full bg-red-400 text-white flex items-center justify-center hover:bg-red-500 transition cursor-pointer"
                               title="Cancelar reserva">
@@ -524,8 +528,11 @@ export default function SchedulePage() {
                         <div className="flex flex-wrap gap-1.5 ml-[52px]">
                           {slot.bookings.map((b: any) => (
                             <span key={b.id} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-muted text-[12px] font-semibold text-foreground group">
-                              <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+                              {b.status === "pending" && (
+                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" title="Pendiente de pago" />
+                              )}
                               {b.memberName}
+                              {b.status === "pending" && b.memberId && <CobrarButton booking={b} compact />}
                               <button onClick={(e) => { e.stopPropagation(); setCancelTarget(b.id); }}
                                 className="ml-0.5 opacity-0 group-hover:opacity-100 size-3.5 rounded-full bg-red-400 text-white flex items-center justify-center hover:bg-red-500 transition cursor-pointer"
                                 title="Cancelar reserva">
@@ -648,8 +655,12 @@ export default function SchedulePage() {
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="text-[14px] font-bold text-foreground truncate">{b.memberName}</div>
-                              {b.memberPhone && <div className="text-[11px] text-muted-foreground">{b.memberPhone}</div>}
+                              <div className="text-[11px] text-muted-foreground">
+                                {b.memberPhone}
+                                {b.status === "pending" && <span className="text-amber-500 font-bold"> — pendiente de pago</span>}
+                              </div>
                             </div>
+                            {b.status === "pending" && b.memberId && <CobrarButton booking={b} />}
                             <button onClick={() => setCancelTarget(b.id)}
                               className="opacity-0 group-hover:opacity-100 shrink-0 size-7 rounded-full bg-red-100 dark:bg-red-900/30 text-red-500 flex items-center justify-center hover:bg-red-200 dark:hover:bg-red-900/50 transition cursor-pointer"
                               title="Cancelar reserva">

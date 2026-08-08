@@ -42,7 +42,8 @@ export async function POST(request: Request) {
   if (!member) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   if (member.status !== "active") return NextResponse.json({ error: "Membresía no activa. Realizá el pago primero." }, { status: 400 });
 
-  const { slotId, date } = await request.json();
+  const body = await request.json();
+  const { slotId, date, extraClass } = body;
   if (!slotId || !date) return NextResponse.json({ error: "slotId y date requeridos" }, { status: 400 });
 
   const targetDate = new Date(date);
@@ -64,6 +65,8 @@ export async function POST(request: Request) {
     }
   }
 
+  const extraClassPrice = settings?.extraClassPrice ?? 3000;
+
   const memberWithPlan = await prisma.member.findUnique({
     where: { id: member.id },
     include: { plan: true },
@@ -74,6 +77,12 @@ export async function POST(request: Request) {
     const booking = await prisma.$transaction(async (tx) => {
       await tx.$queryRaw`SELECT id FROM "ScheduleSlot" WHERE id = ${slotId} FOR UPDATE`;
 
+      const existing = await tx.scheduleBooking.findFirst({
+        where: { slotId, memberId: member.id, date: targetDate },
+      });
+      if (existing) throw new PortalBookingError(400, "Ya tenés una reserva para esta clase.");
+
+      let isExtra = false;
       if (sessionsPerWeek != null) {
         const weekStart = startOfWeekUTC(targetDate);
         const weekEnd = new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000);
@@ -85,14 +94,14 @@ export async function POST(request: Request) {
           },
         });
         if (weeklyCount >= sessionsPerWeek) {
-          throw new PortalBookingError(400, `Tu plan permite ${sessionsPerWeek} clases por semana y ya alcanzaste el límite.`);
+          if (!extraClass) {
+            const err = new PortalBookingError(400, `Tu plan permite ${sessionsPerWeek} clases por semana. Reservá una clase extra por ₡${extraClassPrice.toLocaleString("es-CR")}.`) as PortalBookingError & { extraClassPrice?: number };
+            err.extraClassPrice = extraClassPrice;
+            throw err;
+          }
+          isExtra = true;
         }
       }
-
-      const existing = await tx.scheduleBooking.findFirst({
-        where: { slotId, memberId: member.id, date: targetDate },
-      });
-      if (existing) throw new PortalBookingError(400, "Ya tenés una reserva para esta clase.");
 
       const confirmedCount = await tx.scheduleBooking.count({
         where: { slotId, date: targetDate, status: "confirmed" },
@@ -107,6 +116,8 @@ export async function POST(request: Request) {
           memberName: member.name,
           memberPhone: member.phone,
           date: targetDate,
+          status: isExtra ? "pending" : "confirmed",
+          notes: isExtra ? `Clase extra — ₡${extraClassPrice.toLocaleString("es-CR")} pendiente de pago` : null,
         },
         include: { slot: true },
       });
@@ -115,7 +126,11 @@ export async function POST(request: Request) {
     return NextResponse.json(booking, { status: 201 });
   } catch (err) {
     if (err instanceof PortalBookingError) {
-      return NextResponse.json({ error: err.message }, { status: err.status });
+      const body: Record<string, unknown> = { error: err.message };
+      if ((err as { extraClassPrice?: number }).extraClassPrice != null) {
+        body.extraClassPrice = (err as { extraClassPrice?: number }).extraClassPrice;
+      }
+      return NextResponse.json(body, { status: err.status });
     }
     if (isUniqueViolation(err)) {
       return NextResponse.json({ error: "Ya tenés una reserva para esta clase." }, { status: 400 });

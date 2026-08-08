@@ -123,6 +123,7 @@ model TenantSetting {
   slotMinutes        Int      @default(60)
   maxPaxPerBooking   Int      @default(10)
   advanceNoticeHours Int      @default(2)
+  extraClassPrice    Int      @default(3000)
 
   // Factura Electrónica (Hacienda CR)
   legalId         String?
@@ -196,6 +197,8 @@ model ScheduleBooking {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  paymentLinks PaymentLink[]
 
   @@index([tenantId, slotId, date])
   @@index([memberId, date])
@@ -555,6 +558,9 @@ model PaymentLink {
 
   memberPaymentId String?          @unique
   memberPayment   MemberPayment?   @relation(fields: [memberPaymentId], references: [id])
+
+  scheduleBookingId String?
+  scheduleBooking   ScheduleBooking? @relation(fields: [scheduleBookingId], references: [id], onDelete: SetNull)
 
   createdAt   DateTime @default(now())
   expiresAt   DateTime?

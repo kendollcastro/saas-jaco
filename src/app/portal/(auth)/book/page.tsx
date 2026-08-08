@@ -17,6 +17,9 @@ export default function BookPage() {
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
+  const [extraClassPrice, setExtraClassPrice] = useState<number | null>(null);
+  const [confirmingExtra, setConfirmingExtra] = useState(false);
+  const [pendingInfo, setPendingInfo] = useState<{ date: string } | null>(null);
 
   useEffect(() => {
     if (!token) { router.replace("/portal/login"); return; }
@@ -50,16 +53,28 @@ export default function BookPage() {
   async function handleBook() {
     if (!selectedSlot) return;
     setError("");
+    setExtraClassPrice(null);
     setSubmitting(true);
     try {
       const res = await fetch("/api/portal/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-portal-token": token || "" },
-        body: JSON.stringify({ slotId: selectedSlot, date: bookingDate }),
+        body: JSON.stringify({ slotId: selectedSlot, date: bookingDate, extraClass: confirmingExtra }),
       });
       const data = await res.json();
-      if (!res.ok) { setError(data.error); return; }
-      setDone(true);
+      if (!res.ok) {
+        if (data.extraClassPrice != null) {
+          setExtraClassPrice(data.extraClassPrice);
+          setConfirmingExtra(false);
+        }
+        setError(data.error);
+        return;
+      }
+      if (data.status === "pending") {
+        setPendingInfo({ date: bookingDate });
+      } else {
+        setDone(true);
+      }
     } catch { setError("Error de conexión"); }
     finally { setSubmitting(false); }
   }
@@ -80,6 +95,30 @@ export default function BookPage() {
           <h2 className="text-[20px] font-extrabold text-foreground">Reserva confirmada!</h2>
           <p className="text-[13px] text-muted-foreground">
             Te esperamos el {parseDateInput(bookingDate).toLocaleDateString("es-CR", { weekday: "long", day: "numeric", month: "long" })}
+          </p>
+          <button onClick={() => router.push("/portal/dashboard")}
+            className="w-full py-3.5 border-none rounded-xl text-[14px] font-bold bg-gradient-to-r from-primary to-blue-500 text-primary-foreground cursor-pointer shadow-xl shadow-primary/25 hover:shadow-primary/40 transition-all">
+            Volver al inicio
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (pendingInfo) {
+    return (
+      <div className="p-5 max-w-lg mx-auto">
+        <div
+          className="backdrop-blur-xl bg-card/70 dark:bg-card/50 border border-border/50 shadow-2xl rounded-3xl p-8 text-center space-y-5 mt-8"
+        >
+          <div className="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mx-auto">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2.5" strokeLinecap="round">
+              <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+          </div>
+          <h2 className="text-[20px] font-extrabold text-foreground">Reserva de clase extra</h2>
+          <p className="text-[13px] text-muted-foreground">
+            Solicitaste la clase del {parseDateInput(pendingInfo.date).toLocaleDateString("es-CR", { weekday: "long", day: "numeric", month: "long" })}. El negocio te va a contactar para coordinar el pago.
           </p>
           <button onClick={() => router.push("/portal/dashboard")}
             className="w-full py-3.5 border-none rounded-xl text-[14px] font-bold bg-gradient-to-r from-primary to-blue-500 text-primary-foreground cursor-pointer shadow-xl shadow-primary/25 hover:shadow-primary/40 transition-all">
@@ -199,6 +238,20 @@ export default function BookPage() {
         <p className="text-[12px] text-destructive font-semibold">
           {error}
         </p>
+      )}
+
+      {extraClassPrice != null && (
+        <div className="p-4 rounded-2xl border-2 border-amber-400/60 bg-amber-50 dark:bg-amber-900/10 space-y-3">
+          <p className="text-[12.5px] text-foreground font-bold">Ya usaste tus clases de esta semana</p>
+          <p className="text-[12px] text-muted-foreground">Podés reservar esta clase pagando una clase extra de ₡{extraClassPrice.toLocaleString("es-CR")}.</p>
+          <button
+            onClick={() => { setExtraClassPrice(null); setError(""); setConfirmingExtra(true); handleBook(); }}
+            disabled={submitting}
+            className="w-full py-3 border-none rounded-xl text-[13px] font-bold bg-gradient-to-r from-amber-500 to-orange-500 text-white cursor-pointer shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 transition-all disabled:opacity-50"
+          >
+            {submitting ? "Reservando..." : `Reservar clase extra (₡${extraClassPrice.toLocaleString("es-CR")})`}
+          </button>
+        </div>
       )}
 
       <button
