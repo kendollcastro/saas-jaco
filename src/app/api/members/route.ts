@@ -13,7 +13,9 @@ export async function GET() {
     orderBy: { createdAt: "desc" },
     take: 100,
   });
-  return NextResponse.json(members);
+  return NextResponse.json(
+    members.map(({ pin, ...m }) => ({ ...m, hasPin: !!pin }))
+  );
 }
 
 export async function POST(request: Request) {
@@ -99,5 +101,7 @@ export async function POST(request: Request) {
     include: { payments: { orderBy: { createdAt: "desc" } }, plan: true },
   });
 
-  return NextResponse.json(updated, { status: 201 });
+  if (!updated) return NextResponse.json(member, { status: 201 });
+  const { pin, ...safe } = updated;
+  return NextResponse.json({ ...safe, hasPin: !!pin }, { status: 201 });
 }

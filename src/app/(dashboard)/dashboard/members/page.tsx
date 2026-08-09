@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import Link from "next/link";
 import SlideOver from "@/components/slide-over";
 import { formatPhone, waPhone } from "@/lib/phone";
-import { Clock, Dumbbell, Tag } from "lucide-react";
+import { Clock, Dumbbell, Tag, KeyRound } from "lucide-react";
 import { fmtStoredDate, daysUntilStoredDate, todayLocalDateOnly } from "@/lib/utils";
 
 const months = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
@@ -68,6 +68,8 @@ export default function MembersPage() {
   const [editingProfile, setEditingProfile] = useState(false);
   const [profileSaving, setProfileSaving] = useState(false);
   const [paySubmitting, setPaySubmitting] = useState(false);
+  const [pinMember, setPinMember] = useState<any | null>(null);
+  const [tenantSlug, setTenantSlug] = useState<string>("");
   const [statusTab, setStatusTab] = useState("all");
   const [page, setPage] = useState(0);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -143,10 +145,12 @@ export default function MembersPage() {
     Promise.all([
       fetch("/api/members").then((r) => r.json()),
       fetch("/api/membership-plans").then((r) => r.json()),
+      fetch("/api/settings").then((r) => r.json()).catch(() => null),
     ])
-      .then(([m, p]) => {
+      .then(([m, p, s]) => {
         setMembers(Array.isArray(m) ? m : []);
         setPlans(Array.isArray(p) ? p : []);
+        if (s?.slug) setTenantSlug(s.slug);
       })
       .catch(() => toast.error("Error al cargar datos"))
       .finally(() => setLoading(false));
@@ -705,6 +709,12 @@ export default function MembersPage() {
                       WhatsApp
                     </a>
                     <CobrarButton memberId={selectedMember.id} name={selectedMember.name} phone={selectedMember.phone} />
+                    <PinButton
+                      member={selectedMember}
+                      tenantSlug={tenantSlug}
+                      onAssigned={(updated) => { setSelectedMember(updated); load(); }}
+                      onOpen={() => setPinMember(selectedMember)}
+                    />
                   </div>
                 )}
 
@@ -1096,6 +1106,126 @@ function CobrarButton({ memberId, name, phone }: { memberId: string; name: strin
                 </button>
                 <button onClick={() => setOpen(false)}
                   className="w-full py-2 rounded-xl text-sm font-semibold text-muted-foreground hover:text-foreground transition cursor-pointer">
+                  Cancelar
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+function PinButton({ member, tenantSlug, onAssigned, onOpen }: {
+  member: any;
+  tenantSlug: string;
+  onAssigned: (updated: any) => void;
+  onOpen: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [pin, setPin] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  function openModal() {
+    if (!member.hasPin) {
+      const generated = Math.floor(1000 + Math.random() * 9000).toString();
+      setPin(generated);
+    } else {
+      setPin("");
+    }
+    setSaved(false);
+    setOpen(true);
+    onOpen();
+  }
+
+  async function handleSave() {
+    if (!/^\d{4,6}$/.test(pin)) { toast.error("El PIN debe tener entre 4 y 6 dígitos"); return; }
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/members/${member.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin }),
+      });
+      const data = await res.json();
+      if (!res.ok) { toast.error(data.error || "Error al guardar PIN"); return; }
+      setSaved(true);
+      onAssigned(data);
+      toast.success("PIN guardado. El socio ya puede entrar al portal");
+    } catch { toast.error("Error al guardar PIN"); }
+    finally { setSaving(false); }
+  }
+
+  function sendWhatsApp() {
+    const cleaned = (member.phone || "").replace(/[^0-9]/g, "");
+    if (!cleaned) { toast.error("El socio no tiene teléfono"); return; }
+    const waMsg = `Hola ${member.name}, 👋 tu acceso al portal de socios: entra a ${window.location.origin}/portal?slug=${encodeURIComponent(tenantSlug)} y usá este PIN: ${pin}`;
+    window.open(`https://wa.me/${cleaned}?text=${encodeURIComponent(waMsg)}`, "_blank");
+  }
+
+  return (
+    <>
+      <button onClick={openModal}
+        className="inline-flex items-center gap-2 px-4 py-2.5 bg-violet-500/10 text-violet-600 rounded-[10px] text-[13px] font-bold hover:bg-violet-500/20 transition cursor-pointer">
+        <KeyRound className="size-4" />
+        {member.hasPin ? "Cambiar PIN" : "Dar acceso al portal"}
+      </button>
+
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" onClick={() => setOpen(false)}>
+          <div className="bg-card border border-border rounded-2xl p-5 w-full max-w-sm shadow-2xl space-y-4" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-base font-extrabold text-foreground">
+              {member.hasPin ? "Cambiar PIN" : "Acceso al portal"}
+            </h3>
+            <p className="text-[13px] text-muted-foreground leading-relaxed">
+              {member.hasPin
+                ? `El socio ya tiene acceso al portal. Podés asignar un nuevo PIN para ${member.name}.`
+                : `Generá un PIN para que ${member.name} pueda iniciar sesión en tu portal de socios. Le sugerimos enviarlo por WhatsApp.`}
+            </p>
+
+            <div>
+              <label className="block text-xs font-bold text-muted-foreground mb-1">PIN (4-6 dígitos)</label>
+              <input
+                value={pin}
+                onChange={(e) => setPin(e.target.value.replace(/[^0-9]/g, "").slice(0, 6))}
+                inputMode="numeric"
+                placeholder="1234"
+                className="w-full px-3.5 py-2.5 border border-input rounded-xl text-sm font-sans tracking-[0.3em] text-foreground bg-background focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition text-center text-lg"
+              />
+            </div>
+
+            {saved && (
+              <div className="p-3 bg-emerald-500/10 rounded-xl text-center">
+                <p className="text-sm font-bold text-emerald-600">PIN guardado</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {member.phone ? "Ahora enviáselo por WhatsApp." : "El socio no tiene teléfono registrado."}
+                </p>
+              </div>
+            )}
+
+            {saved ? (
+              <div className="flex gap-2">
+                {member.phone && (
+                  <button onClick={sendWhatsApp}
+                    className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-[#25d366] text-white cursor-pointer hover:bg-[#25d366]/90 transition">
+                    Enviar por WhatsApp
+                  </button>
+                )}
+                <button onClick={() => setOpen(false)}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-primary text-primary-foreground cursor-pointer hover:bg-primary/90 transition">
+                  Listo
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <button onClick={handleSave} disabled={saving || !pin}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-primary text-primary-foreground cursor-pointer shadow-lg shadow-primary/25 hover:bg-primary/90 transition disabled:opacity-50">
+                  {saving ? "Guardando..." : "Guardar PIN"}
+                </button>
+                <button onClick={() => setOpen(false)}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-muted-foreground hover:text-foreground transition cursor-pointer">
                   Cancelar
                 </button>
               </div>

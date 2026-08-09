@@ -102,7 +102,7 @@ function LoginForm() {
           </button>
           <p className="text-center text-[12px] text-[#64748b]">
             ¿No tenés cuenta?{" "}
-            <Link href="/portal/register" className="text-primary font-bold hover:underline">Registrate</Link>
+            <Link href={`/portal/register${slug ? `?slug=${encodeURIComponent(slug)}` : ""}`} className="text-primary font-bold hover:underline">Registrate</Link>
           </p>
         </form>
       </div>

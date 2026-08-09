@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { hashPin, generateToken, getPortalTenant } from "@/lib/portal-auth";
+import { hashPin, generateToken } from "@/lib/portal-auth";
 import { normalizePhone } from "@/lib/phone";
 
 export async function POST(request: Request) {
@@ -15,7 +15,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "PIN debe ser de 4 a 6 dígitos" }, { status: 400 });
     }
 
-    const tenant = await getPortalTenant(slug || null);
+    if (!slug) {
+      return NextResponse.json(
+        { error: "Falta el negocio. Usá el link del portal que te compartió el gimnasio." },
+        { status: 400 }
+      );
+    }
+    const tenant = await prisma.tenant.findUnique({ where: { slug }, include: { settings: true } });
+    if (!tenant) {
+      return NextResponse.json(
+        { error: "El negocio no existe. Verificá el link del portal." },
+        { status: 400 }
+      );
+    }
 
     const existing = await prisma.member.findFirst({ where: { tenantId: tenant.id, phone } });
     if (existing) {

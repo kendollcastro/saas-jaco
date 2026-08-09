@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { hashPin, verifyPin, generateToken, getPortalTenant } from "@/lib/portal-auth";
+import { hashPin, verifyPin, generateToken } from "@/lib/portal-auth";
 import { normalizePhone } from "@/lib/phone";
 import { rateLimit } from "@/lib/rate-limit";
 
@@ -27,7 +27,13 @@ export async function POST(request: Request) {
 
     const where: any = { phone };
     if (slug) {
-      const tenant = await getPortalTenant(slug);
+      const tenant = await prisma.tenant.findUnique({ where: { slug } });
+      if (!tenant) {
+        return NextResponse.json(
+          { error: "El negocio no existe. Verificá el link del portal." },
+          { status: 400 }
+        );
+      }
       where.tenantId = tenant.id;
     }
 

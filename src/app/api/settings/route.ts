@@ -62,6 +62,7 @@ export async function GET() {
     bookingNavLabel: settings?.bookingNavLabel || null,
     advanceNoticeHours: settings?.advanceNoticeHours ?? 2,
     extraClassPrice: settings?.extraClassPrice ?? 3000,
+    slug: tenant?.slug || null,
     modules: modules.map((m) => ({
       key: m.module.key,
       name: m.module.name,

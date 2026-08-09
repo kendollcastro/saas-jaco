@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Toaster } from "sonner";
 import { ThemeProvider, useTheme } from "next-themes";
 import ThemeApplier, { applyDashboardTheme } from "@/components/theme-applier";
+import PortalModal from "@/components/portal-modal";
 
 const OnboardingWizard = dynamic(
   () => import("@/components/onboarding-wizard"),
@@ -116,6 +117,8 @@ export default function DashboardShell({
   const [logoUrl, setLogoUrl] = useState(initial.logoUrl);
   const [activeModules, setActiveModules] = useState<string[]>(initial.activeModuleKeys);
   const [bookingNavLabel, setBookingNavLabel] = useState(initial.bookingNavLabel);
+  const [tenantSlug, setTenantSlug] = useState<string | null>(null);
+  const [portalOpen, setPortalOpen] = useState(false);
   const [maintenance] = useState<{ enabled: boolean; message: string } | null>(initial.maintenance);
   const [onboarding, setOnboarding] = useState<{ needsOnboarding: boolean; progress: any } | null>(initial.onboarding);
   const lastLogoRef = useRef(initial.logoUrl);
@@ -151,6 +154,7 @@ export default function DashboardShell({
         setBusinessName(d.businessName || "");
         setLogoUrl(d.logoUrl || "");
         setBookingNavLabel(d.bookingNavLabel || "");
+        setTenantSlug(d.slug || null);
         if (d.modules) {
           setActiveModules(d.modules.filter((m: any) => m.active).map((m: any) => m.key));
         }
@@ -441,10 +445,20 @@ export default function DashboardShell({
             </div>
           </div>
 
-          {/* Date chip */}
-          <div className="flex items-center gap-2 text-[13px] font-semibold text-muted-foreground bg-muted rounded-[10px] px-3.5 py-2 flex-shrink-0">
-            <Calendar className="size-[14px] md:size-[15px]" />
-            <span className="text-[12px] md:text-[13px]">{dateStr}</span>
+          {/* Date chip + Portal button */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              onClick={() => setPortalOpen(true)}
+              className="flex items-center gap-2 text-[13px] font-semibold text-primary bg-primary/10 hover:bg-primary/15 rounded-[10px] px-3.5 py-2 transition-colors active:scale-95"
+              title="Compartí el portal de socios con tus clientes"
+            >
+              <Scan className="size-[14px] md:size-[15px]" />
+              <span className="text-[12px] md:text-[13px]">Portal de socios</span>
+            </button>
+            <div className="flex items-center gap-2 text-[13px] font-semibold text-muted-foreground bg-muted rounded-[10px] px-3.5 py-2">
+              <Calendar className="size-[14px] md:size-[15px]" />
+              <span className="text-[12px] md:text-[13px]">{dateStr}</span>
+            </div>
           </div>
         </header>
 
@@ -456,6 +470,11 @@ export default function DashboardShell({
           {children}
         </div>
         <Toaster />
+        <PortalModal
+          open={portalOpen}
+          onClose={() => setPortalOpen(false)}
+          slug={tenantSlug}
+        />
       </main>
     </div>
     )}

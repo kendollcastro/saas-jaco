@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getApiUser } from "@/lib/api-auth";
 import { normalizePhone } from "@/lib/phone";
+import { hashPin } from "@/lib/portal-auth";
 import type { Prisma } from "@prisma/client";
 
 export async function PATCH(
@@ -24,6 +25,17 @@ export async function PATCH(
     lastNotifiedAt: body.markNotified ? new Date() : undefined,
     status: body.status || undefined,
   };
+
+  if (body.pin !== undefined && body.pin !== null && body.pin !== "") {
+    const pinStr = String(body.pin);
+    if (!/^\d{4,6}$/.test(pinStr)) {
+      return NextResponse.json(
+        { error: "El PIN debe tener entre 4 y 6 dígitos" },
+        { status: 400 }
+      );
+    }
+    data.pin = hashPin(pinStr);
+  }
 
   const profileFields = [
     "name", "phone", "email", "birthDate", "gender", "weightKg", "heightCm",
@@ -49,5 +61,6 @@ export async function PATCH(
     include: { payments: { orderBy: { createdAt: "desc" }, take: 5 }, plan: true },
   });
 
-  return NextResponse.json(updated);
+  const { pin, ...safe } = updated;
+  return NextResponse.json({ ...safe, hasPin: !!pin });
 }
