@@ -37,6 +37,7 @@ import {
   MessageSquare,
   BarChart3,
   Scan,
+  Building2,
 } from "lucide-react";
 
 export interface DashboardSettings {
@@ -62,6 +63,7 @@ const allNavItems = [
   { label: "Horario", href: "/dashboard/schedule", icon: Clock, module: "bookings" },
   { label: "Productos", href: "/dashboard/products", icon: Package, module: "inventory" },
   { label: "Caja", href: "/dashboard/pos", icon: ShoppingCart, module: "inventory" },
+  { label: "Proyectos", href: "/dashboard/projects", icon: Building2, module: "construction" },
   { label: "Facturación", href: "/dashboard/invoices", icon: Receipt, module: "invoicing" },
   { label: "Soporte", href: "/dashboard/support", icon: MessageSquare, module: null },
   { label: "Reportes", href: "/dashboard/reports", icon: BarChart3, module: null },

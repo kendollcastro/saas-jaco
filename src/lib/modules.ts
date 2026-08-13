@@ -7,6 +7,7 @@ export const AVAILABLE_MODULES = [
   { key: "inventory", name: "Inventario", description: "Control de stock y POS", price: 25 },
   { key: "invoicing", name: "Facturación Electrónica", description: "Facturas electrónicas Hacienda CR", price: 25 },
   { key: "menu", name: "Menú Digital", description: "Menú QR para restaurantes", price: 15 },
+  { key: "construction", name: "Proyectos de Construcción", description: "Proyectos, cotizaciones por partidas y gastos de obra", price: 30 },
 ] as const;
 
 export async function getActiveModules(tenantId: string) {
